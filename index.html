@@ -959,11 +959,11 @@
       font-weight: 600;
       letter-spacing: 0.02em;
     }
-    #sync-bar.synced { background: var(--sb-bg-card); color: var(--sb-ink); }
-    #sync-bar.saving { background: var(--sb-bg-card); color: var(--sb-ink-soft); }
-    #sync-bar.failed { background: #ffe4e1; color: #7a1f1f; }
-    .sync-label { font-weight: 700; }
-    .sync-detail { color: var(--sb-ink-soft); font-weight: 400; }
+    #sync-bar.synced { background: transparent !important; color: var(--sb-ink); }
+    #sync-bar.saving { background: transparent !important; color: var(--sb-ink-soft); }
+    #sync-bar.failed { background: #ffe4e1 !important; color: #7a1f1f; }
+    .sync-label { font-weight: 700; font-size: inherit; }
+    .sync-detail { color: var(--sb-ink-soft); font-weight: 600; font-size: inherit !important; opacity: 1 !important; }
 
     /* ── Sourberry calendar layout ─────────────────────── */
     .toolbar {
@@ -1002,6 +1002,11 @@
     .toolbar-btn:hover:not(:disabled) { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--sb-line); }
     .toolbar-btn:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 var(--sb-line); }
     .toolbar-btn:disabled { opacity: 0.4; box-shadow: 1px 1px 0 var(--sb-line); }
+    .toolbar-btn.active {
+      background: #f9e85c !important;
+      color: var(--sb-ink) !important;
+      box-shadow: 3px 3px 0 var(--sb-line);
+    }
     #month-label {
       font-family: 'Inter Tight', system-ui, sans-serif !important;
       font-variation-settings: normal !important;
@@ -1009,7 +1014,60 @@
       font-size: 1.4rem;
       letter-spacing: -0.01em;
       color: var(--sb-ink);
+      margin: 0;
+      flex-shrink: 0;
+    }
+    .month-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
       margin: 0 14px 10px;
+    }
+    .plan-peek {
+      display: none;
+      flex: 1 1 auto;
+      align-items: center;
+      gap: 8px;
+      background: var(--sb-eniko);
+      color: #fff;
+      border: 1.5px solid var(--sb-line);
+      box-shadow: 3px 3px 0 var(--sb-line);
+      border-radius: 4px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      min-width: 0;
+    }
+    .plan-peek-title {
+      font-weight: 700;
+      flex-shrink: 0;
+      max-width: 50%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .plan-peek-meta {
+      opacity: 0.9;
+      font-weight: 400;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1 1 auto;
+    }
+    .plan-peek-edit {
+      font-size: 0.7rem;
+      opacity: 0.85;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+    .plan-chip-peeked {
+      filter: brightness(1.15);
+      outline: 2px solid #fff;
+      outline-offset: -3px;
     }
     @media (max-width: 640px) {
       .toolbar {
@@ -1027,13 +1085,14 @@
       gap: 4px !important;
     }
     .day {
-      min-height: 92px;
+      min-height: 116px;
       height: auto !important;
+      min-width: 0;
       padding: 6px !important;
       position: relative;
       display: flex !important;
       flex-direction: column;
-      overflow: visible !important;
+      overflow: hidden !important;
     }
     .day .slots { margin-top: auto; }
     .day .confirm-row { margin-top: 4px; }
@@ -1230,7 +1289,7 @@
         gap: 8px !important;
       }
       .you-are { font-size: 0.78rem; }
-      .day { min-height: 96px; padding: 4px !important; }
+      .day { min-height: 108px; padding: 4px !important; }
       .day.other-month { min-height: 30px; }
       .day-num { font-size: 0.95rem !important; }
       .plan-chip { font-size: 0.58rem !important; padding: 1px 4px !important; }
@@ -1390,19 +1449,23 @@
 <div class="toolbar">
   <button class="toolbar-btn toolbar-arrow" id="prev-btn" onclick="changeMonth(-1)">‹</button>
   <div class="toolbar-center">
-    <button class="toolbar-btn" onclick="manageHolidays(event)">Holidays</button>
-    <button class="toolbar-btn" onclick="togglePlansPanel(event)">Plans</button>
+    <button class="toolbar-btn" data-tool="holidays" onclick="manageHolidays(event)">Holidays</button>
+    <button class="toolbar-btn" data-tool="plans" onclick="togglePlansPanel(event)">Plans</button>
     <button class="toolbar-btn" onclick="goToday()">Today</button>
-    <button class="toolbar-btn" onclick="toggleWishlistOpen(event)">Wishlist</button>
+    <button class="toolbar-btn" data-tool="wishlist" onclick="toggleWishlistOpen(event)">Wishlist</button>
   </div>
   <button class="toolbar-btn toolbar-arrow" id="next-btn" onclick="changeMonth(1)">›</button>
 </div>
 
-<h2 id="month-label"></h2>
+<div class="month-row">
+  <h2 id="month-label"></h2>
+  <div id="plan-peek" class="plan-peek" style="display:none" onclick="planPeekClicked()" aria-label="Plan preview, tap to edit"></div>
+</div>
 
 <div id="holiday-mode-banner" class="mode-banner"></div>
 <div id="holiday-panel" class="holiday-panel"></div>
 <div id="plans-panel" class="holiday-panel plans-panel"></div>
+<div id="wishlist-card" class="wishlist" style="display:none"></div>
 <div id="eniko-tip" style="display:none"></div>
 
 <div id="best-dates-section"></div>
@@ -1415,13 +1478,10 @@
 </div>
 
 <div class="key-bar">
-  <span class="key-item"><strong>AM</strong> Morning</span>
-  <span class="key-item"><strong>PM</strong> Afternoon</span>
-  <span class="key-item"><strong>Eve</strong> Evening</span>
-  <span class="key-item"><strong>maybe</strong> Tentative</span>
-  <span class="key-item key-heart"><span class="heart-icon">♥</span> Strong match</span>
-  <span class="key-item"><strong>△</strong> Possible match</span>
-  <span class="key-item key-bh">🏦 BH Bank holiday</span>
+  <span class="key-item"><strong>A</strong> = AM</span>
+  <span class="key-item"><strong>P</strong> = PM</span>
+  <span class="key-item"><strong>E</strong> = Eve</span>
+  <span class="key-item"><strong>BH</strong> = Bank holiday</span>
 </div>
 
 <div id="sync-bar" class="synced">Synced</div>
@@ -1476,6 +1536,7 @@ let holidayMode = false;
 let holidayEditingDate = null;
 let plansOpen = false;
 let editingPlanId = null;        // null = closed, 'new' = adding, uuid = editing
+let peekedPlanId = null;         // null = none, uuid = preview shown
 let enikoTipDismissed = sessionStorage.getItem('eniko_tip_dismissed') === '1';
 
 viewDate.setDate(1);
@@ -1530,6 +1591,7 @@ async function applySession(session) {
   renderCalendar();
   renderBestDates();
   renderWishlist();
+  updateToolbarActive();
   setTimeout(() => { try { renderNextWeekend(); } catch {} }, 500);
 
   subscribeRealtime();
@@ -1665,6 +1727,7 @@ function changeMonth(delta) {
   viewDate.setMonth(viewDate.getMonth() + delta);
   if (viewDate < MIN_MONTH) viewDate = new Date(MIN_MONTH);
   if (viewDate > MAX_MONTH) viewDate = new Date(MAX_MONTH);
+  clearPlanPeek();
   renderCalendar();
   renderBestDates();
   renderWishlist();
@@ -1729,17 +1792,17 @@ function renderBestDates() {
 }
 
 function renderWishlist() {
-  let card = document.getElementById('wishlist-card');
-  if (!card) {
-    card = document.createElement('div');
-    card.id = 'wishlist-card';
-    card.className = 'wishlist';
-    const header = document.querySelector('header');
-    header.insertAdjacentElement('afterend', card);
+  const card = document.getElementById('wishlist-card');
+  if (!card) return;
+
+  if (!wishlistOpen) {
+    card.style.display = 'none';
+    card.innerHTML = '';
+    return;
   }
+  card.style.display = 'block';
 
   const wishlist = getWishlist();
-  const top3 = wishlist.filter(item => !item.done).slice(0, 3).map(item => item.text).join(' • ');
   const items = wishlist.map((item, index) => `
     <li class="wishlist-item" data-index="${index}">
       <button class="wishlist-move" onclick="moveWishlistItem(${index}, -1, event)">↑</button>
@@ -1751,18 +1814,16 @@ function renderWishlist() {
       <button class="wishlist-delete" onclick="deleteWishlistItem(${index}, event)">✕</button>
     </li>`).join('');
 
-  card.className = `wishlist${wishlistOpen ? ' open' : ''}`;
   card.innerHTML = `
-    <div class="wishlist-head">
-      <h3>💡 Date wishlist</h3>
-      <button class="wishlist-edit-btn" onclick="toggleWishlistOpen(event)">${wishlistOpen ? 'Hide' : 'Open'}</button>
+    <div class="panel-head">
+      <h3>Date wishlist</h3>
+      <button class="panel-close" onclick="toggleWishlistOpen(event)" aria-label="Close wishlist">✕</button>
     </div>
-    <div class="wishlist-summary" onclick="toggleWishlistOpen(event)">${escapeHtml(top3 || 'No ideas yet')}</div>
-    <div class="wishlist-body">
+    <button class="holiday-chip plans-add" onclick="toggleWishlistEditor(event)">Edit list</button>
+    <div class="wishlist-body" style="display:block">
       <ul class="wishlist-list" id="wishlist-list">${items}</ul>
       <div class="wishlist-help">Use ↑ / ↓ to reorder, tick things you've done, tap i for history, or delete with ✕.</div>
       <div class="wishlist-undo" id="wishlist-undo"></div>
-      <button class="wishlist-edit-btn" onclick="toggleWishlistEditor(event)">Edit list</button>
       <div class="wishlist-editor" id="wishlist-editor">
         <textarea id="wishlist-textarea" class="wishlist-textarea" placeholder="One idea per line"></textarea>
         <div class="wishlist-actions">
@@ -1793,7 +1854,9 @@ function getWishlist() {
 function toggleWishlistOpen(event) {
   if (event) event.stopPropagation();
   wishlistOpen = !wishlistOpen;
+  clearPlanPeek();
   renderWishlist();
+  updateToolbarActive();
 }
 
 function toggleWishlistEditor(event) {
@@ -2102,10 +2165,19 @@ function renderCalendar() {
       chip.className = 'plan-chip';
       if (p.start_date === key) chip.classList.add('plan-chip-start');
       if (p.end_date === key) chip.classList.add('plan-chip-end');
-      const titleText = p.event_time ? `${p.title} · ${p.event_time}` : p.title;
-      chip.textContent = titleText;
+      if (peekedPlanId === p.id) chip.classList.add('plan-chip-peeked');
+      chip.textContent = p.title;
       chip.title = [p.title, p.event_time, p.location, p.notes].filter(Boolean).join(' · ');
-      chip.addEventListener('click', (e) => { e.stopPropagation(); startEditPlan(p.id); });
+      chip.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // First tap: peek. Second tap on same plan: edit.
+        if (peekedPlanId === p.id) {
+          clearPlanPeek();
+          startEditPlan(p.id);
+        } else {
+          showPlanPeek(p);
+        }
+      });
       cell.appendChild(chip);
     });
 
@@ -2359,12 +2431,55 @@ function debouncedReload() {
   }, 400);
 }
 
+// ── Plan chip peek (1st tap = preview, 2nd tap = edit) ────
+function showPlanPeek(plan) {
+  peekedPlanId = plan.id;
+  const peek = document.getElementById('plan-peek');
+  if (!peek) return;
+  const dateLabel = formatPlanDateRange(plan);
+  const extras = [plan.event_time, plan.location].filter(Boolean).join(' · ');
+  peek.innerHTML = `
+    <span class="plan-peek-title">${escapeHtml(plan.title)}</span>
+    <span class="plan-peek-meta">${escapeHtml(dateLabel + (extras ? ' · ' + extras : ''))}</span>
+    <span class="plan-peek-edit">Tap to edit ›</span>`;
+  peek.style.display = 'flex';
+  renderCalendar();
+}
+
+function clearPlanPeek() {
+  peekedPlanId = null;
+  const peek = document.getElementById('plan-peek');
+  if (peek) { peek.style.display = 'none'; peek.innerHTML = ''; }
+}
+
+function planPeekClicked() {
+  if (peekedPlanId) {
+    const id = peekedPlanId;
+    clearPlanPeek();
+    startEditPlan(id);
+  }
+}
+
+// ── Toolbar active state ──────────────────────────────────
+function updateToolbarActive() {
+  document.querySelectorAll('.toolbar-btn[data-tool]').forEach(b => {
+    const tool = b.getAttribute('data-tool');
+    const active =
+      (tool === 'holidays' && holidayMode) ||
+      (tool === 'plans' && plansOpen) ||
+      (tool === 'wishlist' && wishlistOpen);
+    b.classList.toggle('active', active);
+  });
+}
+
 // ── Plans UI ───────────────────────────────────────────────
 function togglePlansPanel(event) {
   if (event) event.stopPropagation();
   plansOpen = !plansOpen;
   if (!plansOpen) editingPlanId = null;
+  clearPlanPeek();
   renderPlansPanel();
+  updateToolbarActive();
 }
 
 function closePlansPanel() {
@@ -2579,9 +2694,11 @@ function manageHolidays(event) {
   if (event) event.stopPropagation();
   holidayMode = !holidayMode;
   if (!holidayMode) holidayEditingDate = null;
+  clearPlanPeek();
   renderCalendar();
   renderHolidayModeBanner();
   renderHolidayPanel();
+  updateToolbarActive();
 }
 
 // scheduleSave / doSave are obsolete — each mutation site now calls a
