@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Omar & Enikő 🗓️</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#FF6B35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Our Calendar">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --omar: #FF6B35;
+      --eniko: #9B59B6;
+      --both: #27AE60;
+      --bg: #FDF6EE;
+      --surface: #FFFFFF;
+      --text: #2C2C2C;
+      --muted: #aaa;
+      --radius: 14px;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 52px;
+    }
+    @media (min-width: 900px) {
+      body {
+        max-width: 960px;
+        margin: 0 auto;
+      }
+    }
+
+    header {
+      background: var(--surface);
+      text-align: center;
+      padding: 16px 16px 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: space-between;
+      width: 100%;
+    }
+    .you-are {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+    .you-are button {
+      background: none;
+      border: none;
+      color: var(--muted);
+      text-decoration: underline;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: inherit;
+      padding: 0;
+    }
+    .last-updated {
+      display: none;
+    }
+
+    .top-strip {
+      display: block;
+      padding: 10px 12px 4px;
+    }
+    .month-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0;
+      min-width: 0;
+    }
+    .month-nav-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 0;
+      flex: 1;
+    }
+    .month-nav h2 {
+      font-size: 1rem;
+      font-weight: 800;
+      min-width: 110px;
+      text-align: center;
+      margin: 0;
+    }
+    .nav-btn {
+      background: var(--surface);
+      border: 1.5px solid #e0d6cc;
+      border-radius: 50%;
+      width: 32px; height: 32px;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .nav-btn:hover { background: #f0e6da; }
+    .nav-btn:disabled { opacity: 0.3; cursor: default; }
+    .today-btn {
+      background: none;
+      border: 1.5px solid #e0d6cc;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--text);
+    }
+    .today-btn:hover { background: #f0e6da; }
+    .mode-banner {
+      margin: 8px 12px 0;
+      background: #eef6ff;
+      color: #2f5f8f;
+      border-left: 4px solid #5b9bd5;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: none;
+    }
+    .holiday-panel {
+      margin: 8px 12px 0;
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #dbe7f3;
+      padding: 10px;
+      display: none;
+    }
+    .holiday-panel.open { display: block; }
+    .holiday-panel h3 {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #2f5f8f;
+      margin-bottom: 8px;
+    }
+    .holiday-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .holiday-chip {
+      border: 1px solid #cddff1;
+      background: #f6fbff;
+      color: #2f5f8f;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font: inherit;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .holiday-panel-date {
+      font-size: 0.74rem;
+      color: #5c7084;
+      margin-bottom: 8px;
+    }
+
+    #next-weekend-banner {
+      background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+      border-left: 4px solid var(--both);
+      padding: 8px 10px;
+      font-size: 0.72rem;
+      color: #1b5e20;
+      font-weight: 700;
+      text-align: left;
+      border-radius: 10px;
+      min-width: 0;
+      display: block;
+      min-height: 44px;
+      width: calc(100% - 24px);
+      margin: 6px 12px 0;
+      box-shadow: inset 0 0 0 1px rgba(39, 174, 96, 0.08);
+    }
+    #next-weekend-banner .nw-main {
+      display: block;
+      text-align: left;
+      line-height: 1.2;
+    }
+    #next-weekend-banner .nw-sub {
+      font-weight: 400;
+      font-size: 0.78rem;
+      opacity: 0.8;
+      margin-top: 2px;
+      display: block;
+      text-align: center;
+    }
+
+    .key-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      padding: 10px 16px;
+      background: #fff;
+      border-top: 1px solid #f0e8dc;
+      border-bottom: 1px solid #f0e8dc;
+      font-size: 0.78rem;
+      color: var(--text);
+    }
+    .key-item { display: flex; align-items: center; gap: 4px; }
+    .key-item strong { font-weight: 800; }
+
+    .shared-hint {
+      display: none;
+    }
+
+    #eniko-tip {
+      background: linear-gradient(135deg, #f3e5f5, #ede7f6);
+      border-left: 4px solid var(--eniko);
+      padding: 10px 16px;
+      font-size: 0.82rem;
+      color: #4a148c;
+      line-height: 1.5;
+      text-align: center;
+      position: relative;
+    }
+    #eniko-tip .tip-hu { font-style: italic; font-weight: 700; display: block; }
+    #eniko-tip .tip-en { opacity: 0.75; font-size: 0.76rem; display: block; margin-top: 2px; }
+    #eniko-tip .tip-close {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      border: none;
+      background: none;
+      color: #6f4b89;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .key-bh { color: #888; }
+    .key-heart { color: var(--both); font-weight: 700; }
+    .key-heart .heart-icon { color: var(--both); }
+
+    .best-dates,
+    .wishlist {
+      margin: 12px 14px 0;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      display: none;
+    }
+    .best-dates { border-left: 4px solid var(--both); }
+    .best-dates h3 {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--both);
+      margin-bottom: 6px;
+    }
+    .best-dates ul {
+      list-style: none;
+      font-size: 0.8rem;
+      line-height: 1.7;
+      color: var(--text);
+    }
+    .best-dates ul li::before { content: "• "; }
+
+    .wishlist { border-left: 4px solid #d6a34f; }
+    .wishlist.open { display: block; }
+    .wishlist-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .wishlist h3 {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #a06a12;
+    }
+    .wishlist-summary {
+      margin-top: 6px;
+      font-size: 0.74rem;
+      color: #8a7a68;
+      cursor: pointer;
+      padding: 8px 10px;
+      background: #fffaf0;
+      border: 1px dashed #ead7b1;
+      border-radius: 10px;
+    }
+    .wishlist-chevron {
+      font-size: 0.95rem;
+      color: #8a5c13;
+      transition: transform 0.18s ease;
+    }
+    .wishlist.open .wishlist-chevron {
+      transform: rotate(180deg);
+    }
+    .wishlist-body {
+      display: none;
+      margin-top: 10px;
+    }
+    .wishlist.open .wishlist-body {
+      display: block;
+    }
+    .wishlist-edit-btn {
+      background: none;
+      border: 1px solid #ead7b1;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-family: inherit;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: #8a5c13;
+    }
+    .wishlist-list {
+      list-style: none;
+      font-size: 0.78rem;
+      line-height: 1.6;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .wishlist-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid #f0e0bf;
+      border-radius: 10px;
+      background: #fffdf9;
+      position: relative;
+    }
+    .wishlist-item.drop-target::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      top: -4px;
+      height: 3px;
+      background: #d6a34f;
+      border-radius: 999px;
+    }
+    .wishlist-item.dragging {
+      opacity: 0.55;
+    }
+    .wishlist-rank {
+      min-width: 22px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #a06a12;
+    }
+    .wishlist-check {
+      width: 16px;
+      height: 16px;
+      accent-color: #d6a34f;
+      cursor: pointer;
+    }
+    .wishlist-text {
+      flex: 1;
+    }
+    .wishlist-text.done {
+      text-decoration: line-through;
+      opacity: 0.55;
+    }
+    .wishlist-move {
+      border: none;
+      background: #f7edd9;
+      color: #8a5c13;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .wishlist-info {
+      border: none;
+      background: #f3eee5;
+      color: #8a5c13;
+      font-size: 0.72rem;
+      font-weight: 800;
+      cursor: pointer;
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .wishlist-delete {
+      border: none;
+      background: none;
+      color: #b56a5c;
+      font-size: 0.95rem;
+      cursor: pointer;
+      padding: 0 2px;
+    }
+    .wishlist-help {
+      margin-top: 8px;
+      font-size: 0.7rem;
+      color: #8a7a68;
+    }
+    .wishlist-undo {
+      margin-top: 8px;
+      font-size: 0.72rem;
+      color: #8a5c13;
+    }
+    .wishlist-undo button {
+      border: none;
+      background: none;
+      color: #8a5c13;
+      text-decoration: underline;
+      font: inherit;
+      cursor: pointer;
+      padding: 0;
+      margin-left: 6px;
+    }
+    .wishlist-editor {
+      margin-top: 8px;
+      display: none;
+    }
+    .wishlist-editor.open { display: block; }
+    .wishlist-textarea {
+      width: 100%;
+      min-height: 110px;
+      resize: vertical;
+      border: 1.5px solid #ead7b1;
+      border-radius: 10px;
+      padding: 10px;
+      font-family: inherit;
+      font-size: 0.78rem;
+      color: var(--text);
+      background: #fffdf9;
+      outline: none;
+    }
+    .wishlist-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .wishlist-save,
+    .wishlist-cancel {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-family: inherit;
+      font-size: 0.74rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .wishlist-save {
+      background: #d6a34f;
+      color: white;
+    }
+    .wishlist-cancel {
+      background: #f3eee5;
+      color: #6f6252;
+    }
+
+    .cal-wrap {
+      margin: 12px;
+      background: var(--surface);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      padding: 12px 10px 0;
+    }
+    .dow-header {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--muted);
+      padding: 4px 4px 2px;
+      gap: 3px;
+    }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 3px;
+      padding: 0 0 4px;
+    }
+
+    .day {
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 2px 1px 3px;
+      height: 88px;
+      position: relative;
+      border: 1.5px solid transparent;
+      transition: border-color 0.2s;
+      overflow: hidden;
+    }
+    .day.has-shared {
+      border-color: var(--both);
+    }
+    .day.today-cell {
+      border-color: #FFB347;
+      background: #FFFAF4;
+    }
+    .day.today-cell.today-flash {
+      box-shadow: 0 0 0 3px rgba(255, 179, 71, 0.35), 0 0 18px rgba(255, 179, 71, 0.35);
+      transform: scale(1.02);
+      transition: box-shadow 0.25s ease, transform 0.25s ease;
+    }
+    .day.past {
+      background: #f5f5f5;
+      opacity: 0.6;
+    }
+    .day.empty {
+      background: transparent;
+      border: none;
+      pointer-events: none;
+    }
+
+    .day-num {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+    .day-top {
+      min-height: 20px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .day.past .day-num { color: var(--muted); }
+
+    .bh-label,
+    .tag-chip {
+      font-size: 0.44rem;
+      background: #f0e6fa;
+      color: #7a4a9c;
+      border-radius: 4px;
+      padding: 1px 3px;
+      display: inline-block;
+      font-weight: 700;
+      cursor: default;
+      margin-left: 2px;
+    }
+    .tag-chip {
+      background: #eef6ff;
+      color: #336699;
+      cursor: pointer;
+    }
+    .agreed-chip {
+      background: #e8f5e9;
+      color: #1b5e20;
+      cursor: default;
+      max-width: 100%;
+      border: none;
+      box-shadow: none;
+      margin-left: auto;
+    }
+    .confirm-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      margin-top: 2px;
+      font-size: 0.4rem;
+      color: #1b5e20;
+      font-weight: 700;
+    }
+    .confirm-row input {
+      width: 10px;
+      height: 10px;
+      margin: 0;
+      accent-color: #27AE60;
+    }
+
+    .slots {
+      display: flex;
+      gap: 2px;
+      justify-content: center;
+      flex-wrap: nowrap;
+    }
+    .slot-btn {
+      flex: 1;
+      font-size: 0.5rem;
+      font-weight: 700;
+      border-radius: 5px;
+      padding: 2px 0;
+      border: 1.5px solid #e0d6cc;
+      background: #f8f4f0;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.12s;
+      position: relative;
+      min-width: 0;
+      text-align: center;
+      line-height: 1.4;
+    }
+    .slot-btn .slot-mark {
+      display: block;
+      font-size: 0.38rem;
+      line-height: 1;
+      margin-top: 1px;
+      letter-spacing: 0;
+      opacity: 0.9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .slot-btn.mine {
+      border-color: currentColor;
+      color: var(--user-color, var(--omar));
+      background: color-mix(in srgb, var(--user-color, var(--omar)) 15%, white);
+    }
+    .slot-btn.mine-maybe {
+      border-color: currentColor;
+      color: var(--user-color, var(--omar));
+      background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--user-color, var(--omar)) 10%, white), color-mix(in srgb, var(--user-color, var(--omar)) 10%, white) 4px, white 4px, white 8px);
+    }
+    .slot-btn.theirs {
+      border-color: var(--other-color, var(--eniko));
+      color: var(--other-color, var(--eniko));
+      background: color-mix(in srgb, var(--other-color, var(--eniko)) 10%, white);
+    }
+    .slot-btn.both-slot {
+      border-color: var(--both);
+      color: var(--both);
+      background: color-mix(in srgb, var(--both) 15%, white);
+    }
+    .slot-btn.possible-slot {
+      border-color: #7fbf90;
+      color: #3d8b57;
+      background: repeating-linear-gradient(135deg, #eef9f1, #eef9f1 4px, #ffffff 4px, #ffffff 8px);
+    }
+    .slot-btn .heart, .slot-btn .slot-mark {
+      font-size: 0.5rem;
+    }
+
+
+    #user-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(253,246,238,0.97);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      z-index: 100;
+    }
+    #user-overlay h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+    }
+    #user-overlay p {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .user-btns {
+      display: flex;
+      gap: 16px;
+    }
+    .user-btn {
+      padding: 14px 28px;
+      border-radius: 16px;
+      border: none;
+      font-family: inherit;
+      font-size: 1.1rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.12s;
+    }
+    .user-btn:active { transform: scale(0.96); }
+    .user-btn.omar { background: var(--omar); color: white; }
+    .user-btn.eniko { background: var(--eniko); color: white; }
+
+    #sync-bar {
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 8px 12px 14px;
+      transition: background 0.3s, color 0.3s;
+      cursor: default;
+    }
+    #sync-bar.synced { background: #e8f5e9; color: #2e7d32; }
+    #sync-bar.saving { background: #fff8e1; color: #f57f17; }
+    #sync-bar.failed { background: #fdecea; color: #c62828; cursor: pointer; }
+    .sync-label { font-weight: 800; margin-right: 6px; }
+    .sync-detail { font-size: 0.78rem; opacity: 0.85; }
+
+
+    .bh-tip {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: #2C2C2C;
+      color: white;
+      font-size: 0.65rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      z-index: 30;
+      pointer-events: none;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<div id="user-overlay" style="display:none">
+  <h2>👋 Sign in</h2>
+  <p id="auth-msg">Enter your email and password.</p>
+  <form id="auth-form" onsubmit="event.preventDefault(); submitAuthForm();" style="display:flex; flex-direction:column; gap:10px; width:min(320px, 100%);">
+    <input id="auth-email" type="email" required autocomplete="email" placeholder="you@example.com"
+      style="padding:10px 12px; border:1px solid #ccc; border-radius:8px; font-size:1rem;"/>
+    <input id="auth-password" type="password" autocomplete="current-password" placeholder="Password"
+      style="padding:10px 12px; border:1px solid #ccc; border-radius:8px; font-size:1rem;"/>
+    <button id="auth-submit" type="submit"
+      style="padding:10px 14px; border:none; border-radius:8px; background:#9B59B6; color:#fff; font-weight:700; cursor:pointer;">
+      Sign in
+    </button>
+  </form>
+  <p style="font-size:0.85rem; margin-top:4px;">
+    <a href="#" onclick="event.preventDefault(); toggleAuthMode();" id="auth-toggle" style="color:#9B59B6;">Send me a magic link instead</a>
+  </p>
+  <p id="auth-status" style="font-size:0.85rem; color:var(--muted); min-height:1.2em; margin-top:8px;"></p>
+</div>
+
+<header>
+  <h1><button class="wishlist-edit-btn" onclick="manageHolidays(event)">Manage holidays</button><span>Omar & Enikő 🗓️</span><button class="wishlist-edit-btn" onclick="toggleWishlistOpen(event)">Date wishlist</button></h1>
+  <div class="you-are" id="you-are-line"></div>
+  <div class="last-updated" id="last-updated-line"></div>
+</header>
+
+<div class="top-strip">
+  <div class="month-nav">
+    <button class="nav-btn" id="prev-btn" onclick="changeMonth(-1)">‹</button>
+    <div class="month-nav-center">
+      <h2 id="month-label"></h2>
+      <div style="text-align:center;margin-top:3px">
+        <button class="today-btn" onclick="goToday()">Today</button>
+      </div>
+    </div>
+    <button class="nav-btn" id="next-btn" onclick="changeMonth(1)">›</button>
+  </div>
+</div>
+
+<div id="holiday-mode-banner" class="mode-banner"></div>
+<div id="holiday-panel" class="holiday-panel"></div>
+<div id="eniko-tip" style="display:none"></div>
+
+<div id="best-dates-section"></div>
+
+<div class="cal-wrap">
+  <div class="dow-header">
+    <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+  </div>
+  <div class="cal-grid" id="cal-grid"></div>
+</div>
+
+<div class="key-bar">
+  <span class="key-item"><strong>AM</strong> Morning</span>
+  <span class="key-item"><strong>PM</strong> Afternoon</span>
+  <span class="key-item"><strong>Eve</strong> Evening</span>
+  <span class="key-item"><strong>maybe</strong> Tentative</span>
+  <span class="key-item key-heart"><span class="heart-icon">♥</span> Strong match</span>
+  <span class="key-item"><strong>△</strong> Possible match</span>
+  <span class="key-item key-bh">🏦 BH Bank holiday</span>
+</div>
+
+<div id="sync-bar" class="synced">Synced</div>
+
+<script>
+'use strict';
+
+// ── Supabase ───────────────────────────────────────────────
+const SUPABASE_URL = 'https://cnylugjbbjyqlryhpetf.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_PuyZBqsQvgzod3qJIaIcIw_qKvmmkZG';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+});
+const BH_URL = 'https://www.gov.uk/bank-holidays.json';
+const WEATHER_URL = 'https://api.open-meteo.com/v1/forecast?latitude=52.2053&longitude=0.1218&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Europe%2FLondon&forecast_days=14';
+const SLOTS = ['morning','afternoon','evening'];
+const SLOT_LABELS = { morning:'AM', afternoon:'PM', evening:'Eve' };
+const SLOT_STATES = { off: 0, maybe: 1, free: 2 };
+const USER_COLORS = { omar: '#FF6B35', eniko: '#9B59B6' };
+const OTHER = { omar: 'eniko', eniko: 'omar' };
+const USER_DISPLAY = { omar: 'Omar 🟠', eniko: 'Enikő 🟣' };
+const DAY_TAG_TYPES = [
+  { key:'annual-leave', label:'AL' },
+  { key:'half-term', label:'Half' }
+];
+
+const DEFAULT_WISHLIST = [
+  'Coffee and a walk',
+  'Brunch somewhere nice',
+  'Dinner date',
+  'Museum or gallery',
+  'Cinema night',
+  'Cocktails or wine bar',
+  'Park picnic if the weather behaves',
+  'Table tennis rematch',
+  'Dessert place',
+  'Bookshop browse + coffee'
+];
+
+let currentUser = null;       // 'omar' | 'eniko', set after Supabase auth
+let currentSession = null;
+let realtimeChannel = null;
+let viewDate = new Date();
+let data = { omar:{}, eniko:{}, notes:{omar:{},eniko:{}}, lastUpdated:{}, wishlist:[], dayTags:{}, agreedDates:{} };
+let bankHolidays = {};
+let weatherData = {};
+let activeNoteCell = null;
+let wishlistOpen = false;
+let lastDeletedWishlistItem = null;
+let touchDragIndex = null;
+let holidayMode = false;
+let holidayEditingDate = null;
+let enikoTipDismissed = sessionStorage.getItem('eniko_tip_dismissed') === '1';
+
+viewDate.setDate(1);
+
+async function init() {
+  // Bank holidays + weather are independent of auth, load in parallel.
+  loadBankHolidays();
+  loadWeather();
+
+  // Initial session check.
+  const { data: { session } } = await supabase.auth.getSession();
+  await applySession(session);
+
+  // React to sign-in / sign-out events (e.g. magic link redirect).
+  supabase.auth.onAuthStateChange(async (_event, session) => {
+    await applySession(session);
+  });
+}
+
+async function applySession(session) {
+  currentSession = session;
+  const overlay = document.getElementById('user-overlay');
+
+  if (!session) {
+    currentUser = null;
+    overlay.style.display = 'flex';
+    setAuthStatus('');
+    return;
+  }
+
+  // Map auth user → persona via calendar_members.
+  const { data: member, error } = await supabase
+    .from('calendar_members')
+    .select('member_key, display_name')
+    .eq('user_id', session.user.id)
+    .maybeSingle();
+
+  if (error || !member) {
+    setAuthStatus(`Signed in as ${session.user.email}, but this account isn't mapped to Omar or Enikő. Sign out and use the right address.`);
+    overlay.style.display = 'flex';
+    return;
+  }
+
+  currentUser = member.member_key;
+  overlay.style.display = 'none';
+
+  applyUserStyle();
+  updateHeader();
+  showEnikoTip();
+
+  await loadData();
+  renderCalendar();
+  renderBestDates();
+  renderWishlist();
+  setTimeout(() => { try { renderNextWeekend(); } catch {} }, 500);
+
+  subscribeRealtime();
+}
+
+let authMode = 'password';   // 'password' | 'magic'
+
+function toggleAuthMode() {
+  authMode = authMode === 'password' ? 'magic' : 'password';
+  const pwInput = document.getElementById('auth-password');
+  const submitBtn = document.getElementById('auth-submit');
+  const toggle = document.getElementById('auth-toggle');
+  const msg = document.getElementById('auth-msg');
+  if (authMode === 'magic') {
+    pwInput.style.display = 'none';
+    pwInput.required = false;
+    submitBtn.textContent = 'Send magic link';
+    toggle.textContent = 'Use password instead';
+    msg.textContent = "Enter your email — we'll send a magic sign-in link.";
+  } else {
+    pwInput.style.display = '';
+    pwInput.required = true;
+    submitBtn.textContent = 'Sign in';
+    toggle.textContent = 'Send me a magic link instead';
+    msg.textContent = 'Enter your email and password.';
+  }
+  setAuthStatus('');
+}
+
+async function submitAuthForm() {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  if (!email) return;
+  const btn = document.getElementById('auth-submit');
+  btn.disabled = true;
+
+  if (authMode === 'magic') {
+    setAuthStatus('Sending magic link…');
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.href.split('#')[0] }
+    });
+    btn.disabled = false;
+    setAuthStatus(error ? 'Error: ' + error.message : `Magic link sent to ${email}. Check your inbox.`);
+  } else {
+    setAuthStatus('Signing in…');
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    btn.disabled = false;
+    if (error) setAuthStatus('Error: ' + error.message);
+    // success path: onAuthStateChange handles the rest
+  }
+}
+
+function setAuthStatus(msg) {
+  const el = document.getElementById('auth-status');
+  if (el) el.textContent = msg;
+}
+
+const ENIKO_TIPS = [
+  { hu: 'Ne felejtsd el megmondani Omarnak, milyen jóképű!', en: 'Don’t forget to tell Omar how handsome he is.' },
+  { hu: 'Beszámolók szerint Omar a Cambridge legjobb asztalitenisz-játékosa.', en: 'Reports say Omar is Cambridge’s finest table tennis player.' },
+  { hu: 'Omar már megint hibátlanul énekelt ma reggel. Meg kell kérdezni tőle.', en: 'Omar apparently sang perfectly this morning. Ask him about it.' },
+  { hu: 'Szakertők álláspontja szerint Omar főz a legjobban. Süője megint győzött.', en: 'Experts agree: Omar cooks the best steak. His pan is undefeated.' },
+  { hu: 'Omar mára tökéletesen megtanult magyalázni. Kicsit agasztó.', en: 'Omar has now perfected speaking Hungarian. Slightly worrying.' },
+  { hu: 'El ne felejásd: Omar egy nagyon jeles gitaros. Látta a gitarguru.', en: 'Reminder: Omar is a very distinguished guitarist. The guitar guru said so.' },
+  { hu: 'Omar géniusznak nevezi magát. Nincs rá bizonyíték, de érdekes állítás.', en: 'Omar calls himself a genius. No evidence yet, but an interesting claim.' },
+  { hu: 'Szósátatok szerint Omar a legjóképűbb az egész Cambridge-ben.', en: 'According to local gossip, Omar is the most handsome man in Cambridge.' },
+  { hu: 'Fontos emlékeztető: Omar rétegzett sütije legenda. Kérdezd meg a receptet.', en: 'Important reminder: Omar’s layered cake is legendary. Ask for the recipe.' },
+  { hu: 'Omar hibátlanul úsz. És milyen mosolya van. Írd meg neki.', en: 'Omar swims flawlessly. And what a smile. Tell him.' },
+  { hu: 'Egy megbízható forrás szerint Omar a legjobb bukósis pudó Cambridge-ben.', en: 'A reliable source confirms Omar gives the best hugs in Cambridge.' },
+  { hu: 'Emlékeztető: Omar ma is profi volt. Csak tényeket közlünk.', en: 'Reminder: Omar was professional again today. Just stating facts.' }
+];
+
+function showEnikoTip() {
+  const el = document.getElementById('eniko-tip');
+  if (currentUser !== 'eniko' || enikoTipDismissed) { el.style.display = 'none'; return; }
+  const tip = ENIKO_TIPS[Math.floor(Math.random() * ENIKO_TIPS.length)];
+  el.innerHTML = `<button class="tip-close" onclick="dismissEnikoTip(event)">✕</button><span class="tip-hu">💜 ${tip.hu}</span><span class="tip-en">${tip.en}</span>`;
+  el.style.display = 'block';
+}
+
+function dismissEnikoTip(event) {
+  if (event) event.stopPropagation();
+  enikoTipDismissed = true;
+  sessionStorage.setItem('eniko_tip_dismissed', '1');
+  const el = document.getElementById('eniko-tip');
+  if (el) el.style.display = 'none';
+}
+
+async function changeUser() {
+  if (realtimeChannel) {
+    try { await supabase.removeChannel(realtimeChannel); } catch {}
+    realtimeChannel = null;
+  }
+  await supabase.auth.signOut();
+  currentUser = null;
+  data = { omar:{}, eniko:{}, notes:{omar:{},eniko:{}}, lastUpdated:{}, wishlist:[], dayTags:{}, agreedDates:{} };
+  document.getElementById('user-overlay').style.display = 'flex';
+  setAuthStatus('');
+}
+
+function applyUserStyle() {
+  if (!currentUser) return;
+  const col = USER_COLORS[currentUser];
+  const other = USER_COLORS[OTHER[currentUser]];
+  document.documentElement.style.setProperty('--user-color', col);
+  document.documentElement.style.setProperty('--other-color', other);
+}
+
+function updateHeader() {
+  if (!currentUser) return;
+  document.getElementById('you-are-line').innerHTML =
+    `You are ${USER_DISPLAY[currentUser]} &nbsp;<button onclick="changeUser()">[sign out]</button>`;
+
+  document.getElementById('last-updated-line').textContent = '';
+}
+
+function relTime(d) {
+  const diff = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+  return `${Math.floor(diff/86400)}d ago`;
+}
+
+const today = new Date();
+today.setHours(0,0,0,0);
+
+const MIN_MONTH = new Date(today.getFullYear(), 0, 1);
+const MAX_MONTH = new Date(today.getFullYear()+1, 11, 1);
+
+function changeMonth(delta) {
+  viewDate.setMonth(viewDate.getMonth() + delta);
+  if (viewDate < MIN_MONTH) viewDate = new Date(MIN_MONTH);
+  if (viewDate > MAX_MONTH) viewDate = new Date(MAX_MONTH);
+  renderCalendar();
+  renderBestDates();
+  renderWishlist();
+  updateNavBtns();
+}
+
+function goToday() {
+  viewDate = new Date(today.getFullYear(), today.getMonth(), 1);
+  renderCalendar();
+  renderBestDates();
+  renderWishlist();
+  updateNavBtns();
+
+  requestAnimationFrame(() => {
+    const todayCell = document.querySelector('.day.today-cell');
+    if (!todayCell) return;
+    todayCell.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    todayCell.classList.add('today-flash');
+    setTimeout(() => todayCell.classList.remove('today-flash'), 1800);
+  });
+}
+
+function updateNavBtns() {
+  const y = viewDate.getFullYear(), m = viewDate.getMonth();
+  document.getElementById('prev-btn').disabled =
+    (y === MIN_MONTH.getFullYear() && m === MIN_MONTH.getMonth());
+  document.getElementById('next-btn').disabled =
+    (y === MAX_MONTH.getFullYear() && m === MAX_MONTH.getMonth());
+  document.getElementById('month-label').textContent =
+    viewDate.toLocaleDateString('en-GB', { month:'long', year:'numeric' });
+}
+
+function renderBestDates() {
+  const sec = document.getElementById('best-dates-section');
+  const todayStr = isoDate(today);
+  const shared = [];
+  const allDays = new Set([
+    ...Object.keys(data.omar || {}),
+    ...Object.keys(data.eniko || {})
+  ]);
+  for (const d of [...allDays].sort()) {
+    if (d < todayStr) continue;
+    const s = sharedSlots(d);
+    if (s.length) shared.push({ d, s });
+  }
+
+  if (!shared.length) { sec.innerHTML = ''; return; }
+
+  const top3 = shared.slice(0, 3);
+  const items = top3.map(({ d, s }) => {
+    const dt = new Date(d + 'T12:00:00');
+    const label = dt.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
+    const slotNames = s.map(sl => sl.charAt(0).toUpperCase() + sl.slice(1)).join(' & ');
+    return `<li>${label} — ${slotNames} ♥</li>`;
+  }).join('');
+
+  sec.innerHTML = `
+    <div class="best-dates">
+      <h3>✨ Best dates</h3>
+      <ul>${items}</ul>
+    </div>`;
+}
+
+function renderWishlist() {
+  let card = document.getElementById('wishlist-card');
+  if (!card) {
+    card = document.createElement('div');
+    card.id = 'wishlist-card';
+    card.className = 'wishlist';
+    const header = document.querySelector('header');
+    header.insertAdjacentElement('afterend', card);
+  }
+
+  const wishlist = getWishlist();
+  const top3 = wishlist.filter(item => !item.done).slice(0, 3).map(item => item.text).join(' • ');
+  const items = wishlist.map((item, index) => `
+    <li class="wishlist-item" data-index="${index}">
+      <button class="wishlist-move" onclick="moveWishlistItem(${index}, -1, event)">↑</button>
+      <button class="wishlist-move" onclick="moveWishlistItem(${index}, 1, event)">↓</button>
+      <span class="wishlist-rank">${index + 1}.</span>
+      <input class="wishlist-check" type="checkbox" ${item.done ? 'checked' : ''} onclick="toggleWishlistDone(${index}, event)">
+      <span class="wishlist-text ${item.done ? 'done' : ''}">${escapeHtml(item.text)}</span>
+      <button class="wishlist-info" onclick="showWishlistInfo(${index}, event)">i</button>
+      <button class="wishlist-delete" onclick="deleteWishlistItem(${index}, event)">✕</button>
+    </li>`).join('');
+
+  card.className = `wishlist${wishlistOpen ? ' open' : ''}`;
+  card.innerHTML = `
+    <div class="wishlist-head">
+      <h3>💡 Date wishlist</h3>
+      <button class="wishlist-edit-btn" onclick="toggleWishlistOpen(event)">${wishlistOpen ? 'Hide' : 'Open'}</button>
+    </div>
+    <div class="wishlist-summary" onclick="toggleWishlistOpen(event)">${escapeHtml(top3 || 'No ideas yet')}</div>
+    <div class="wishlist-body">
+      <ul class="wishlist-list" id="wishlist-list">${items}</ul>
+      <div class="wishlist-help">Use ↑ / ↓ to reorder, tick things you've done, tap i for history, or delete with ✕.</div>
+      <div class="wishlist-undo" id="wishlist-undo"></div>
+      <button class="wishlist-edit-btn" onclick="toggleWishlistEditor(event)">Edit list</button>
+      <div class="wishlist-editor" id="wishlist-editor">
+        <textarea id="wishlist-textarea" class="wishlist-textarea" placeholder="One idea per line"></textarea>
+        <div class="wishlist-actions">
+          <button class="wishlist-save" onclick="saveWishlist()">Save</button>
+          <button class="wishlist-cancel" onclick="closeWishlistEditor()">Cancel</button>
+        </div>
+      </div>
+    </div>`;
+
+  const undo = document.getElementById('wishlist-undo');
+  if (undo && lastDeletedWishlistItem) {
+    undo.innerHTML = `Deleted \"${escapeHtml(lastDeletedWishlistItem.item.text)}\" <button onclick="undoWishlistDelete(event)">Undo</button>`;
+  }
+
+  attachWishlistDnD();
+}
+
+function getWishlist() {
+  const list = Array.isArray(data.wishlist) ? data.wishlist.filter(Boolean) : [];
+  const normalised = list.map(item => {
+    if (typeof item === 'string') return { text: item, done: false, meta: defaultWishlistMeta() };
+    return { text: item.text || '', done: !!item.done, meta: normaliseWishlistMeta(item.meta) };
+  }).filter(item => item.text);
+  if (normalised.length) return normalised;
+  return DEFAULT_WISHLIST.map(text => ({ text, done: false, meta: defaultWishlistMeta() }));
+}
+
+function toggleWishlistOpen(event) {
+  if (event) event.stopPropagation();
+  wishlistOpen = !wishlistOpen;
+  renderWishlist();
+}
+
+function toggleWishlistEditor(event) {
+  if (event) event.stopPropagation();
+  const editor = document.getElementById('wishlist-editor');
+  const textarea = document.getElementById('wishlist-textarea');
+  const card = document.getElementById('wishlist-card');
+  if (!editor || !textarea) return;
+  if (card) card.classList.add('open');
+  wishlistOpen = true;
+  const isOpen = editor.classList.toggle('open');
+  if (isOpen) {
+    textarea.value = getWishlist().map(item => item.text).join('\n');
+    textarea.focus();
+  }
+}
+
+function defaultWishlistMeta() {
+  return {
+    addedBy: currentUser || 'unknown',
+    addedAt: new Date().toISOString(),
+    reorderedBy: null,
+    reorderedAt: null
+  };
+}
+
+function normaliseWishlistMeta(meta) {
+  return {
+    addedBy: meta?.addedBy || currentUser || 'unknown',
+    addedAt: meta?.addedAt || new Date().toISOString(),
+    reorderedBy: meta?.reorderedBy || null,
+    reorderedAt: meta?.reorderedAt || null
+  };
+}
+
+function updateReorderedMeta(meta) {
+  const base = normaliseWishlistMeta(meta);
+  base.reorderedBy = currentUser || 'unknown';
+  base.reorderedAt = new Date().toISOString();
+  return base;
+}
+
+function showWishlistInfo(index, event) {
+  if (event) event.stopPropagation();
+  const item = getWishlist()[index];
+  if (!item) return;
+  const meta = normaliseWishlistMeta(item.meta);
+  alert(`Added by: ${meta.addedBy}
+Added at: ${new Date(meta.addedAt).toLocaleString('en-GB')}
+Reordered by: ${meta.reorderedBy || '—'}
+Reordered at: ${meta.reorderedAt ? new Date(meta.reorderedAt).toLocaleString('en-GB') : '—'}`);
+}
+
+function moveWishlistItem(index, delta, event) {
+  if (event) event.stopPropagation();
+  const wishlist = [...getWishlist()];
+  const target = index + delta;
+  if (target < 0 || target >= wishlist.length) return;
+  const [moved] = wishlist.splice(index, 1);
+  wishlist.splice(target, 0, moved);
+  if (moved) moved.meta = updateReorderedMeta(moved.meta);
+  data.wishlist = wishlist;
+  saveWishlistToSupabase();
+  renderWishlist();
+  renderCalendar();
+}
+
+function deleteWishlistItem(index, event) {
+  if (event) event.stopPropagation();
+  const wishlist = [...getWishlist()];
+  const [removed] = wishlist.splice(index, 1);
+  lastDeletedWishlistItem = removed ? { item: removed, index } : null;
+  data.wishlist = wishlist;
+  saveWishlistToSupabase();
+  renderWishlist();
+  renderCalendar();
+}
+
+function undoWishlistDelete(event) {
+  if (event) event.stopPropagation();
+  if (!lastDeletedWishlistItem) return;
+  const wishlist = [...getWishlist()];
+  wishlist.splice(lastDeletedWishlistItem.index, 0, lastDeletedWishlistItem.item);
+  data.wishlist = wishlist;
+  lastDeletedWishlistItem = null;
+  saveWishlistToSupabase();
+  renderWishlist();
+  renderCalendar();
+}
+
+function toggleWishlistDone(index, event) {
+  if (event) event.stopPropagation();
+  const wishlist = [...getWishlist()];
+  if (!wishlist[index]) return;
+  wishlist[index].done = !wishlist[index].done;
+  data.wishlist = wishlist;
+  saveWishlistToSupabase();
+  renderWishlist();
+  renderCalendar();
+}
+
+function saveWishlistToSupabase() {
+  setSyncBar('saving', 'Saving…');
+  writeWishlistFull(data.wishlist || [])
+    .then(() => setSyncBar('synced', `Synced ${timeStr()}`))
+    .catch(() => setSyncBar('failed', 'Save failed — tap to retry'));
+}
+
+function closeWishlistEditor() {
+  const editor = document.getElementById('wishlist-editor');
+  if (editor) editor.classList.remove('open');
+}
+
+function saveWishlist() {
+  const textarea = document.getElementById('wishlist-textarea');
+  if (!textarea) return;
+  const items = textarea.value.split('\n').map(s => s.trim()).filter(Boolean).map(text => ({ text, done: false, meta: defaultWishlistMeta() }));
+  data.wishlist = items;
+  closeWishlistEditor();
+  saveWishlistToSupabase();
+  renderWishlist();
+  renderCalendar();
+}
+
+function getSlotState(user, dateKey, slot) {
+  const value = data[user]?.[dateKey]?.[slot];
+  if (value === 'maybe' || value === 1) return 'maybe';
+  if (value === 'free' || value === 2 || value === true) return 'free';
+  return 'off';
+}
+
+function sharedSlots(dateKey) {
+  return SLOTS.filter(s => getSlotState('omar', dateKey, s) === 'free' && getSlotState('eniko', dateKey, s) === 'free');
+}
+
+function possibleSharedSlots(dateKey) {
+  return SLOTS.filter(s => {
+    const o = getSlotState('omar', dateKey, s);
+    const e = getSlotState('eniko', dateKey, s);
+    return o !== 'off' && e !== 'off' && !(o === 'free' && e === 'free');
+  });
+}
+
+function renderHolidayModeBanner() {
+  const el = document.getElementById('holiday-mode-banner');
+  if (!el) return;
+  if (!holidayMode) {
+    el.style.display = 'none';
+    el.textContent = '';
+    return;
+  }
+  el.style.display = 'block';
+  el.textContent = 'Holiday mode on — tap a day to set Annual leave or Half term.';
+}
+
+function renderHolidayPanel() {
+  const panel = document.getElementById('holiday-panel');
+  if (!panel) return;
+  if (!holidayMode || !holidayEditingDate) {
+    panel.classList.remove('open');
+    panel.innerHTML = '';
+    return;
+  }
+  panel.classList.add('open');
+  panel.innerHTML = `
+    <h3>Manage holidays</h3>
+    <div class="holiday-panel-date">${holidayEditingDate}</div>
+    <div class="holiday-actions">
+      <button class="holiday-chip" onclick="setHolidayTag('annual-leave')">Annual Leave</button>
+      <button class="holiday-chip" onclick="setHolidayTag('half-term')">Half Term</button>
+      <button class="holiday-chip" onclick="clearHolidayTags()">Clear</button>
+      <button class="holiday-chip" onclick="closeHolidayPanel()">Done</button>
+    </div>`;
+}
+
+function setHolidayTag(tagKey) {
+  if (!holidayEditingDate) return;
+  const date = holidayEditingDate;
+  const tags = DAY_TAG_TYPES.filter(t => t.key === tagKey).map(t => ({ ...t, by: currentUser || 'unknown', at: new Date().toISOString() }));
+  if (!data.dayTags) data.dayTags = {};
+  data.dayTags[date] = tags;
+  setSyncBar('saving', 'Saving…');
+  writeDayTagsForDate(date, tags)
+    .then(() => setSyncBar('synced', `Synced ${timeStr()}`))
+    .catch(() => setSyncBar('failed', 'Save failed — tap to retry'));
+  renderCalendar();
+  renderHolidayPanel();
+}
+
+function clearHolidayTags() {
+  if (!holidayEditingDate) return;
+  const date = holidayEditingDate;
+  if (!data.dayTags) data.dayTags = {};
+  delete data.dayTags[date];
+  setSyncBar('saving', 'Saving…');
+  writeDayTagsForDate(date, [])
+    .then(() => setSyncBar('synced', `Synced ${timeStr()}`))
+    .catch(() => setSyncBar('failed', 'Save failed — tap to retry'));
+  renderCalendar();
+  renderHolidayPanel();
+}
+
+function closeHolidayPanel() {
+  holidayEditingDate = null;
+  renderHolidayPanel();
+}
+
+function renderCalendar() {
+  updateNavBtns();
+  if (!currentUser) return;
+
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month+1, 0);
+
+  let startDow = firstDay.getDay();
+  startDow = (startDow + 6) % 7;
+
+  for (let i = 0; i < startDow; i++) {
+    const empty = document.createElement('div');
+    empty.className = 'day empty';
+    grid.appendChild(empty);
+  }
+
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const cellDate = new Date(year, month, d);
+    const key = isoDate(cellDate);
+    const isPast = cellDate < today;
+    const isToday = cellDate.getTime() === today.getTime();
+
+    const cell = document.createElement('div');
+    cell.className = 'day';
+    if (isPast) cell.classList.add('past');
+    if (isToday) cell.classList.add('today-cell');
+
+    const shared = sharedSlots(key);
+    const possible = possibleSharedSlots(key);
+    if (shared.length || possible.length) cell.classList.add('has-shared');
+
+    const top = document.createElement('div');
+    top.className = 'day-top';
+
+    const numEl = document.createElement('div');
+    numEl.className = 'day-num';
+    numEl.textContent = d;
+    top.appendChild(numEl);
+    cell.appendChild(top);
+
+    // Shared/possible state is shown via border and slot styling only.
+
+    if (bankHolidays[key]) {
+      const bh = document.createElement('div');
+      bh.className = 'bh-label';
+      bh.textContent = 'BH';
+      bh.title = bankHolidays[key];
+      bh.addEventListener('click', () => {
+        let tip = bh.querySelector('.bh-tip');
+        if (!tip) {
+          tip = document.createElement('div');
+          tip.className = 'bh-tip';
+          tip.textContent = bankHolidays[key];
+          bh.appendChild(tip);
+          setTimeout(() => tip.remove(), 2000);
+        }
+      });
+      top.appendChild(bh);
+    }
+
+    const tags = data.dayTags?.[key] || [];
+    tags.forEach(tag => {
+      const chip = document.createElement('button');
+      chip.className = 'tag-chip';
+      chip.textContent = tag.label;
+      chip.title = `${tag.label} (${tag.by || 'unknown'})`;
+      chip.addEventListener('click', (e) => {
+        e.stopPropagation();
+        holidayEditingDate = key;
+        renderHolidayPanel();
+      });
+      top.appendChild(chip);
+    });
+
+    const agreed = data.agreedDates?.[key];
+    if (agreed?.confirmed) {
+      const agreedChip = document.createElement('span');
+      agreedChip.className = 'tag-chip agreed-chip';
+      agreedChip.textContent = '✅';
+      agreedChip.title = `Confirmed date${agreed.by ? ` (${agreed.by})` : ''}`;
+      top.appendChild(agreedChip);
+    }
+
+    if (holidayMode) {
+      cell.style.cursor = 'pointer';
+      cell.addEventListener('click', () => {
+        holidayEditingDate = key;
+        renderHolidayPanel();
+      });
+    }
+
+    if (!isPast && !holidayMode) {
+      const slotsEl = document.createElement('div');
+      slotsEl.className = 'slots';
+
+      for (const slot of SLOTS) {
+        const btn = document.createElement('button');
+        btn.className = 'slot-btn';
+        const myState = getSlotState(currentUser, key, slot);
+        const otherState = getSlotState(OTHER[currentUser], key, slot);
+        const strongBoth = myState === 'free' && otherState === 'free';
+        const weakBoth = myState !== 'off' && otherState !== 'off' && !strongBoth;
+
+        if (strongBoth) {
+          btn.classList.add('both-slot');
+          btn.innerHTML = `${SLOT_LABELS[slot]}<span class="slot-mark">♥</span>`;
+        } else if (weakBoth) {
+          btn.classList.add('possible-slot');
+          btn.innerHTML = `${SLOT_LABELS[slot]}<span class="slot-mark">poss.</span>`;
+        } else if (myState === 'free') {
+          btn.classList.add('mine');
+          btn.innerHTML = `${SLOT_LABELS[slot]}<span class="slot-mark">${currentUser === 'omar' ? 'O' : 'E'}</span>`;
+        } else if (myState === 'maybe') {
+          btn.classList.add('mine-maybe');
+          btn.innerHTML = `${SLOT_LABELS[slot]}<span class="slot-mark">maybe</span>`;
+        } else if (otherState === 'free') {
+          btn.classList.add('theirs');
+          btn.innerHTML = `${SLOT_LABELS[slot]}<span class="slot-mark">${OTHER[currentUser] === 'omar' ? 'O' : 'E'}</span>`;
+        } else if (otherState === 'maybe') {
+          btn.classList.add('theirs');
+          btn.innerHTML = `${SLOT_LABELS[slot]}<span class="slot-mark">maybe</span>`;
+        } else {
+          btn.textContent = SLOT_LABELS[slot];
+        }
+
+        btn.addEventListener('click', () => toggleSlot(key, slot));
+        slotsEl.appendChild(btn);
+      }
+      cell.appendChild(slotsEl);
+
+    }
+
+    if (shared.length) {
+      const confirmRow = document.createElement('label');
+      confirmRow.className = 'confirm-row';
+      const confirmInput = document.createElement('input');
+      confirmInput.type = 'checkbox';
+      confirmInput.checked = !!agreed?.confirmed;
+      confirmInput.addEventListener('click', (e) => e.stopPropagation());
+      confirmInput.addEventListener('change', () => toggleConfirmedDate(key, confirmInput.checked));
+      const confirmText = document.createElement('span');
+      confirmText.textContent = 'Confirmed?';
+      confirmRow.appendChild(confirmInput);
+      confirmRow.appendChild(confirmText);
+      cell.appendChild(confirmRow);
+    }
+
+    grid.appendChild(cell);
+  }
+}
+
+function toggleSlot(key, slot) {
+  if (!currentUser) return;
+  if (!data[currentUser]) data[currentUser] = {};
+  if (!data[currentUser][key] || Array.isArray(data[currentUser][key])) data[currentUser][key] = {};
+
+  const current = getSlotState(currentUser, key, slot);
+  const next = current === 'off' ? 'maybe' : current === 'maybe' ? 'free' : 'off';
+
+  if (next === 'off') delete data[currentUser][key][slot];
+  else data[currentUser][key][slot] = next;
+
+  if (data[currentUser][key] && !Object.keys(data[currentUser][key]).length) delete data[currentUser][key];
+
+  setSyncBar('saving', 'Saving…');
+  writeAvailability(currentUser, key, slot, next)
+    .then(() => setSyncBar('synced', `Synced ${timeStr()}`))
+    .catch(() => setSyncBar('failed', 'Save failed — tap to retry'));
+  renderCalendar();
+  renderBestDates();
+  renderWishlist();
+}
+
+async function loadData() {
+  setSyncBar('saving', 'Loading…');
+  try {
+    const [avail, notes, wishlist, tags, agreed, lastUpd] = await Promise.all([
+      supabase.from('availability').select('member_key,date,slot,state'),
+      supabase.from('date_notes').select('member_key,date,note'),
+      supabase.from('wishlist_items').select('id,text,done,position,added_by,added_at,reordered_by,reordered_at').order('position', { ascending: true }),
+      supabase.from('day_tags').select('date,tag_key,label,set_by,set_at'),
+      supabase.from('agreed_dates').select('date,confirmed_by,confirmed_at'),
+      supabase.from('last_updated').select('member_key,at'),
+    ]);
+    const firstError = [avail, notes, wishlist, tags, agreed, lastUpd].find(r => r.error);
+    if (firstError) throw firstError.error;
+
+    const blob = { omar:{}, eniko:{}, notes:{omar:{},eniko:{}}, lastUpdated:{}, wishlist:[], dayTags:{}, agreedDates:{} };
+    (avail.data || []).forEach(r => {
+      if (!blob[r.member_key][r.date]) blob[r.member_key][r.date] = {};
+      blob[r.member_key][r.date][r.slot] = r.state;
+    });
+    (notes.data || []).forEach(r => {
+      if (!blob.notes[r.member_key]) blob.notes[r.member_key] = {};
+      blob.notes[r.member_key][r.date] = r.note;
+    });
+    blob.wishlist = (wishlist.data || []).map(r => ({
+      _id: r.id,
+      text: r.text,
+      done: !!r.done,
+      meta: {
+        addedBy: r.added_by,
+        addedAt: r.added_at,
+        reorderedBy: r.reordered_by,
+        reorderedAt: r.reordered_at,
+      },
+    }));
+    (tags.data || []).forEach(r => {
+      if (!blob.dayTags[r.date]) blob.dayTags[r.date] = [];
+      blob.dayTags[r.date].push({ key: r.tag_key, label: r.label, by: r.set_by, at: r.set_at });
+    });
+    (agreed.data || []).forEach(r => {
+      blob.agreedDates[r.date] = { confirmed: true, by: r.confirmed_by, at: r.confirmed_at };
+    });
+    (lastUpd.data || []).forEach(r => { blob.lastUpdated[r.member_key] = r.at; });
+
+    data = blob;
+    setSyncBar('synced', `Synced ${timeStr()}`);
+  } catch(e) {
+    console.error('loadData failed:', e);
+    setSyncBar('failed', 'Load failed — tap to retry');
+  }
+}
+
+// ── Targeted Supabase writes ───────────────────────────────
+async function writeAvailability(member, date, slot, state) {
+  if (state === 'off') {
+    await supabase.from('availability').delete().match({ member_key: member, date, slot });
+  } else {
+    await supabase.from('availability').upsert({ member_key: member, date, slot, state });
+  }
+  await touchLastUpdated();
+}
+
+async function writeAgreedDate(date, confirmed) {
+  if (!confirmed) {
+    await supabase.from('agreed_dates').delete().eq('date', date);
+  } else {
+    await supabase.from('agreed_dates').upsert({
+      date, confirmed_by: currentUser || 'unknown', confirmed_at: new Date().toISOString(),
+    });
+  }
+  await touchLastUpdated();
+}
+
+async function writeDayTagsForDate(date, tags) {
+  // Replace all tags for a date with the given list (may be empty).
+  await supabase.from('day_tags').delete().eq('date', date);
+  if (tags.length) {
+    await supabase.from('day_tags').insert(tags.map(t => ({
+      date, tag_key: t.key, label: t.label,
+      set_by: currentUser || 'unknown', set_at: t.at || new Date().toISOString(),
+    })));
+  }
+  await touchLastUpdated();
+}
+
+async function writeWishlistFull(items) {
+  // Wishlist mutations replace the whole list; we mirror that with delete+insert.
+  await supabase.from('wishlist_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  if (items.length) {
+    await supabase.from('wishlist_items').insert(items.map((it, i) => ({
+      text: it.text, done: !!it.done, position: i,
+      added_by: ['omar','eniko'].includes(it.meta?.addedBy) ? it.meta.addedBy : 'unknown',
+      added_at: it.meta?.addedAt || new Date().toISOString(),
+      reordered_by: ['omar','eniko'].includes(it.meta?.reorderedBy) ? it.meta.reorderedBy : null,
+      reordered_at: it.meta?.reorderedAt || null,
+    })));
+  }
+  await touchLastUpdated();
+}
+
+async function touchLastUpdated() {
+  if (!currentUser) return;
+  const at = new Date().toISOString();
+  data.lastUpdated = data.lastUpdated || {};
+  data.lastUpdated[currentUser] = at;
+  updateHeader();
+  setSyncBar('synced', `Synced ${timeStr()}`);
+  try { await supabase.from('last_updated').upsert({ member_key: currentUser, at }); } catch {}
+}
+
+// ── Realtime ───────────────────────────────────────────────
+function subscribeRealtime() {
+  if (realtimeChannel) return;
+  realtimeChannel = supabase
+    .channel('eniko-calendar')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'availability' },   () => debouncedReload())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'date_notes' },     () => debouncedReload())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'wishlist_items' }, () => debouncedReload())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'day_tags' },       () => debouncedReload())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'agreed_dates' },   () => debouncedReload())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'last_updated' },   () => debouncedReload())
+    .subscribe();
+}
+
+let reloadTimer = null;
+function debouncedReload() {
+  clearTimeout(reloadTimer);
+  reloadTimer = setTimeout(async () => {
+    await loadData();
+    updateHeader();
+    renderCalendar();
+    renderBestDates();
+    renderWishlist();
+  }, 400);
+}
+
+function toggleConfirmedDate(key, confirmed) {
+  const shared = sharedSlots(key);
+  if (!shared.length) return;
+  if (!data.agreedDates) data.agreedDates = {};
+  if (!confirmed) {
+    delete data.agreedDates[key];
+  } else {
+    data.agreedDates[key] = {
+      confirmed,
+      by: currentUser || 'unknown',
+      at: new Date().toISOString()
+    };
+  }
+  setSyncBar('saving', 'Saving…');
+  writeAgreedDate(key, !!confirmed)
+    .then(() => setSyncBar('synced', `Synced ${timeStr()}`))
+    .catch(() => setSyncBar('failed', 'Save failed — tap to retry'));
+  renderCalendar();
+  renderBestDates();
+}
+
+function editDayTags(key) {
+  holidayEditingDate = key;
+  renderHolidayPanel();
+}
+
+function manageHolidays(event) {
+  if (event) event.stopPropagation();
+  holidayMode = !holidayMode;
+  if (!holidayMode) holidayEditingDate = null;
+  renderCalendar();
+  renderHolidayModeBanner();
+  renderHolidayPanel();
+}
+
+// scheduleSave / doSave are obsolete — each mutation site now calls a
+// targeted write function (writeAvailability, writeAgreedDate, etc).
+// Kept as a no-op so old call sites don't error if any slipped through.
+function scheduleSave() { setSyncBar('saving', 'Saving…'); }
+async function doSave() { await loadData(); updateHeader(); renderCalendar(); renderBestDates(); renderWishlist(); }
+
+async function loadBankHolidays() {
+  try {
+    const res = await fetch(BH_URL);
+    if (!res.ok) return;
+    const json = await res.json();
+    const events = json['england-and-wales']?.events || [];
+    events.forEach(e => { bankHolidays[e.date] = e.title; });
+  } catch(e) {}
+}
+
+function wmoEmoji(code) {
+  if (code === 0) return '☀️';
+  if (code <= 2) return '🌤️';
+  if (code === 3) return '☁️';
+  if (code <= 49) return '🌫️';
+  if (code <= 57) return '🌧️';
+  if (code <= 67) return '🌧️';
+  if (code <= 77) return '❄️';
+  if (code <= 82) return '🌦️';
+  if (code <= 86) return '🌨️';
+  if (code <= 99) return '⚡';
+  return '🌡️';
+}
+
+function getDateIdea(shared, weather) {
+  const rainy = weather && weather.code >= 51;
+  const sunny = weather && weather.code <= 2;
+  const wishlist = getWishlist().filter(item => !item.done);
+
+  const bucket = shared.includes('evening') ? 'evening'
+    : shared.includes('afternoon') ? 'afternoon'
+    : shared.includes('morning') ? 'morning'
+    : 'any';
+
+  const scored = wishlist.map(item => {
+    const lower = item.toLowerCase();
+    let score = 0;
+
+    if (bucket === 'morning' && /brunch|breakfast|coffee|walk/.test(lower)) score += 3;
+    if (bucket === 'afternoon' && /walk|park|museum|gallery|coffee|lunch|picnic|bookshop/.test(lower)) score += 3;
+    if (bucket === 'evening' && /dinner|drink|cocktail|wine|cinema|dessert/.test(lower)) score += 3;
+
+    if (sunny && /walk|park|picnic|stroll|outdoor/.test(lower)) score += 3;
+    if (rainy && /museum|gallery|cinema|coffee|café|dessert|indoor|bar|dinner/.test(lower)) score += 3;
+
+    if (!sunny && !rainy) score += 1;
+
+    return { item, score };
+  }).sort((a, b) => b.score - a.score);
+
+  const picked = scored[0]?.item || 'Plan something nice';
+  let why = '';
+  if (bucket === 'morning') why += 'morning';
+  if (bucket === 'afternoon') why += 'afternoon';
+  if (bucket === 'evening') why += 'evening';
+  if (sunny) why += (why ? ' + sunny' : 'sunny');
+  if (rainy) why += (why ? ' + rainy' : 'rainy');
+
+  return why ? `✨ ${picked} · ${why}` : `✨ ${picked}`;
+}
+
+async function loadWeather() {
+  try {
+    const res = await fetch(WEATHER_URL);
+    if (!res.ok) return;
+    const json = await res.json();
+    const dates = json.daily.time;
+    dates.forEach((d, i) => {
+      weatherData[d] = {
+        code: json.daily.weathercode[i],
+        max: Math.round(json.daily.temperature_2m_max[i]),
+        min: Math.round(json.daily.temperature_2m_min[i])
+      };
+    });
+  } catch(e) {}
+}
+
+function fmtLastUpdated(isoStr) {
+  if (!isoStr) return 'never';
+  const d = new Date(isoStr);
+  const date = d.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+  const time = d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+  return `${date} ${time}`;
+}
+
+function syncBarText() {
+  const oTs = fmtLastUpdated(data.lastUpdated?.omar);
+  const eTs = fmtLastUpdated(data.lastUpdated?.eniko);
+  return `Omar: ${oTs}  |  Enikő: ${eTs}`;
+}
+
+function setSyncBar(state, msg) {
+  const bar = document.getElementById('sync-bar');
+  bar.className = state;
+  bar.innerHTML = state === 'synced'
+    ? `<span class="sync-label">Synced</span> <span class="sync-detail">${syncBarText()}</span>`
+    : msg;
+  if (state === 'failed') {
+    bar.onclick = () => { doSave(); };
+  } else {
+    bar.onclick = null;
+  }
+}
+
+function isoDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function timeStr() {
+  return new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+init();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>

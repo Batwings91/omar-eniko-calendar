@@ -1,0 +1,17 @@
+# Local snapshots of live data (contain real availability + wishlist)
+_*.json
+_*.html
+_*.js
+
+# SQL files that contain real data or user UUIDs
+supabase/100_data_import.sql
+supabase/*seed*.sql
+supabase/*_data_*.sql
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+node_modules/
