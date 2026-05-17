@@ -973,10 +973,10 @@
     #auth-toggle { color: var(--sb-eniko) !important; font-weight: 600; }
 
     #sync-bar {
-      padding: 6px 12px 14px;
+      padding: 4px 12px 10px;
       font-family: inherit;
       font-weight: 500;
-      font-size: 0.62rem !important;
+      font-size: 0.55rem !important;
       letter-spacing: 0.02em;
     }
     #sync-bar.synced { background: transparent !important; color: var(--sb-ink-soft); }
@@ -1026,7 +1026,7 @@
       cursor: pointer;
       transition: transform 80ms ease, box-shadow 80ms ease;
     }
-    .toolbar-arrow { padding: 5px 11px; font-size: 0.95rem; }
+    .toolbar-arrow { padding: 5px 16px; font-size: 1rem; font-weight: 700; }
     .toolbar-btn:hover:not(:disabled) { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--sb-line); }
     .toolbar-btn:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 var(--sb-line); }
     .toolbar-btn:disabled { opacity: 0.4; box-shadow: 1px 1px 0 var(--sb-line); }
@@ -1178,8 +1178,6 @@
       margin-bottom: 4px;
     }
     .bh-label {
-      font-size: 0.6rem !important;
-      padding: 1px 5px !important;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       font-weight: 700;
@@ -1347,6 +1345,13 @@
       .you-are { font-size: 0.78rem; }
       .day { height: 110px !important; min-height: 110px !important; padding: 4px !important; }
       .day.other-month { height: 110px !important; }
+      .bh-label, .tag-chip, .agreed-chip {
+        font-size: 0.42rem !important;
+        padding: 0 4px !important;
+        letter-spacing: 0.04em !important;
+      }
+      .day-num { font-size: 0.95rem !important; line-height: 1; }
+      .day-top { gap: 3px !important; }
       .day-num { font-size: 0.95rem !important; }
       .plan-chip { font-size: 0.58rem !important; padding: 1px 4px !important; }
       .cal-grid { gap: 3px !important; }
@@ -2163,14 +2168,17 @@ function renderCalendar() {
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month+1, 0);
 
-  // v0.2 (Sourberry layout): always show 6 weeks × 7 days. Mon-first.
-  // Days outside the current month are dimmed via .other-month, not hidden,
-  // so the calendar grid is always 42 cells and never jumps height.
+  // Mon-first grid. Render only the weeks that contain at least one in-month
+  // day — months that fit in 5 weeks (or 4) don't get a trailing row of empty
+  // out-of-month cells, which was eating ~120px of vertical space.
   let startDow = firstDay.getDay();
   startDow = (startDow + 6) % 7;
   const gridStart = new Date(year, month, 1 - startDow);
+  const totalDays = lastDay.getDate();
+  const weeksNeeded = Math.ceil((startDow + totalDays) / 7);
+  const cellCount = weeksNeeded * 7;
 
-  for (let i = 0; i < 42; i++) {
+  for (let i = 0; i < cellCount; i++) {
     const cellDate = new Date(gridStart);
     cellDate.setDate(gridStart.getDate() + i);
     const inMonth = cellDate.getMonth() === month;
@@ -2318,7 +2326,7 @@ function toggleSlot(key, slot) {
   if (!data[currentUser][key] || Array.isArray(data[currentUser][key])) data[currentUser][key] = {};
 
   const current = getSlotState(currentUser, key, slot);
-  const next = current === 'off' ? 'maybe' : current === 'maybe' ? 'free' : 'off';
+  const next = current === 'off' ? 'free' : current === 'free' ? 'maybe' : 'off';
 
   if (next === 'off') delete data[currentUser][key][slot];
   else data[currentUser][key][slot] = next;
@@ -2591,16 +2599,37 @@ function closePlansPanel() {
 function startNewPlan(prefillDate) {
   const today = isoDate(new Date());
   const startDate = prefillDate || today;
+  // Default end-date to the day after start, so multi-day plans (weekends
+  // away etc.) need zero extra clicks. Single-day plans just dial it back.
+  const nextDay = (iso) => {
+    const d = new Date(iso + 'T12:00:00');
+    d.setDate(d.getDate() + 1);
+    return isoDate(d);
+  };
   editingPlanId = 'new';
   plansOpen = true;
   renderPlansPanel(() => {
     const s = document.getElementById('plan-start-date');
     if (s) s.value = startDate;
     const e = document.getElementById('plan-end-date');
-    if (e) e.value = startDate;
+    if (e) e.value = nextDay(startDate);
     const t = document.getElementById('plan-title');
     if (t) t.focus();
   });
+}
+
+function onPlanStartChange() {
+  const startEl = document.getElementById('plan-start-date');
+  const endEl   = document.getElementById('plan-end-date');
+  if (!startEl || !endEl) return;
+  const start = startEl.value;
+  const end   = endEl.value;
+  if (!start) return;
+  if (!end || end < start) {
+    const d = new Date(start + 'T12:00:00');
+    d.setDate(d.getDate() + 1);
+    endEl.value = isoDate(d);
+  }
 }
 
 function startEditPlan(id) {
@@ -2718,7 +2747,7 @@ function renderPlansPanel(afterRender) {
     html += `
       <div class="plan-form">
         <div class="plan-form-row two">
-          <label>Start date<input type="date" id="plan-start-date"></label>
+          <label>Start date<input type="date" id="plan-start-date" onchange="onPlanStartChange()"></label>
           <label>End date<input type="date" id="plan-end-date"></label>
         </div>
         <label>Title<input type="text" id="plan-title" placeholder="Dinner with Adam &amp; Rachel" maxlength="120"></label>
