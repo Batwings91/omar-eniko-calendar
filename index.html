@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>Omar & Enikő 🗓️</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#FF6B35">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -715,6 +718,343 @@
       z-index: 30;
       pointer-events: none;
     }
+
+    /* ════════════════════════════════════════════════════════
+       SOURBERRY-STYLE OVERLAY (appended)
+       Retrofits the neobrutalist look: cream + dotted bg,
+       Fraunces serif headings, Inter Tight body, hard offset
+       shadows on containers, bordered cards/buttons/pills.
+       Layout untouched. Omar/Enikő colours preserved.
+       ════════════════════════════════════════════════════════ */
+    :root {
+      --sb-bg: #f6f1e7;
+      --sb-bg-card: #fffaf0;
+      --sb-ink: #1a0a14;
+      --sb-ink-soft: #4a2a3a;
+      --sb-line: #2a1018;
+      --sb-omar: #FF6B35;
+      --sb-eniko: #9B59B6;
+    }
+    html, body {
+      background: var(--sb-bg);
+      color: var(--sb-ink);
+      font-family: 'Inter Tight', system-ui, -apple-system, sans-serif;
+    }
+    body {
+      background-image: radial-gradient(circle at 1px 1px, rgba(26,10,20,0.08) 1px, transparent 0);
+      background-size: 22px 22px;
+    }
+    @media (max-width: 640px) { body { background-size: 18px 18px; } }
+
+    header h1, h2, h3,
+    .best-dates h3, .wishlist-summary, #month-label, .day-num {
+      font-family: 'Fraunces', Georgia, serif;
+      font-optical-sizing: auto;
+      font-variation-settings: "opsz" 144;
+      letter-spacing: -0.02em;
+    }
+    header h1 { font-weight: 800; }
+
+    header {
+      background: var(--sb-bg-card);
+      border: 1.5px solid var(--sb-line);
+      box-shadow: 4px 4px 0 var(--sb-line);
+      border-radius: 6px;
+      margin: 14px 14px 14px;
+      padding: 14px 16px;
+    }
+    .you-are { color: var(--sb-ink-soft); }
+    .you-are button {
+      color: var(--sb-eniko);
+      font-weight: 600;
+      font-family: inherit;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    .nav-btn, .today-btn {
+      background: var(--sb-bg-card);
+      border: 1.5px solid var(--sb-line);
+      box-shadow: 3px 3px 0 var(--sb-line);
+      border-radius: 4px;
+      color: var(--sb-ink);
+      font-family: inherit;
+      font-weight: 600;
+      transition: transform 80ms ease, box-shadow 80ms ease;
+    }
+    .nav-btn:hover:not(:disabled), .today-btn:hover {
+      transform: translate(-1px,-1px);
+      box-shadow: 4px 4px 0 var(--sb-line);
+      background: var(--sb-bg-card);
+    }
+    .nav-btn:active, .today-btn:active {
+      transform: translate(2px,2px);
+      box-shadow: 1px 1px 0 var(--sb-line);
+    }
+    .nav-btn:disabled { opacity: 0.4; box-shadow: 1.5px 1.5px 0 var(--sb-line); }
+
+    .mode-banner, .holiday-panel, #sync-bar,
+    .best-dates, .wishlist, .key-bar, .cal-wrap {
+      background: var(--sb-bg-card);
+      border: 1.5px solid var(--sb-line);
+      box-shadow: 4px 4px 0 var(--sb-line);
+      border-radius: 6px;
+    }
+    .cal-wrap { padding: 12px; }
+
+    .holiday-chip, .wishlist-edit-btn, .wishlist-save, .wishlist-cancel,
+    .wishlist-info, .wishlist-move, .wishlist-delete {
+      background: var(--sb-bg-card);
+      border: 1.5px solid var(--sb-line);
+      box-shadow: 2px 2px 0 var(--sb-line);
+      border-radius: 4px;
+      color: var(--sb-ink);
+      font-family: inherit;
+      font-weight: 600;
+      transition: transform 80ms ease, box-shadow 80ms ease;
+    }
+    .holiday-chip:hover, .wishlist-edit-btn:hover, .wishlist-save:hover, .wishlist-cancel:hover {
+      transform: translate(-1px,-1px);
+      box-shadow: 3px 3px 0 var(--sb-line);
+    }
+    .holiday-chip:active, .wishlist-edit-btn:active, .wishlist-save:active, .wishlist-cancel:active {
+      transform: translate(1px,1px);
+      box-shadow: 1px 1px 0 var(--sb-line);
+    }
+    .wishlist-save { background: var(--sb-eniko); color: #fff; }
+
+    .dow-header {
+      background: transparent;
+      border-bottom: 1.5px solid var(--sb-line);
+      color: var(--sb-ink-soft);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+    }
+
+    .day {
+      background: var(--sb-bg-card);
+      border: 1.2px solid rgba(42,16,24,0.4);
+      border-radius: 3px;
+    }
+    .day.empty { background: transparent; border-color: transparent; }
+    .day.past { opacity: 0.55; }
+    .day.today-cell {
+      border: 1.8px solid var(--sb-line);
+      box-shadow: 2px 2px 0 var(--sb-line);
+    }
+    .day.has-shared {
+      border: 1.8px solid var(--sb-eniko);
+    }
+
+    .slot-btn {
+      background: var(--sb-bg);
+      border: 1.2px solid var(--sb-line);
+      border-radius: 3px;
+      color: var(--sb-ink-soft);
+      font-family: inherit;
+      font-weight: 600;
+      transition: transform 60ms ease, box-shadow 60ms ease;
+    }
+    .slot-btn:hover { transform: translate(-0.5px,-0.5px); box-shadow: 1.5px 1.5px 0 var(--sb-line); }
+    .slot-btn:active { transform: translate(1px,1px); box-shadow: 0 0 0 var(--sb-line); }
+
+    .tag-chip, .agreed-chip, .bh-label {
+      background: var(--sb-bg-card);
+      border: 1.2px solid var(--sb-line);
+      border-radius: 999px;
+      font-family: inherit;
+      font-weight: 600;
+      color: var(--sb-ink);
+    }
+    .agreed-chip { background: var(--sb-eniko); color: #fff; }
+
+    /* Legend: plain text, no borders, no bold. */
+    .key-item {
+      background: transparent !important;
+      border: none !important;
+      color: var(--sb-ink-soft);
+      font-weight: 400 !important;
+      padding: 0 !important;
+    }
+    .key-item strong { font-weight: 400 !important; color: var(--sb-ink); }
+
+    .wishlist-item {
+      background: var(--sb-bg-card);
+      border: 1.2px solid var(--sb-line);
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+    .wishlist-item.done { opacity: 0.55; }
+    .wishlist-textarea {
+      background: #fffdf6;
+      border: 1.5px solid var(--sb-line);
+      border-radius: 4px;
+      font-family: 'Inter Tight', sans-serif;
+    }
+    .wishlist-textarea:focus {
+      outline: none;
+      box-shadow: 3px 3px 0 var(--sb-eniko);
+    }
+
+    #user-overlay {
+      background: var(--sb-bg);
+      background-image: radial-gradient(circle at 1px 1px, rgba(26,10,20,0.08) 1px, transparent 0);
+      background-size: 22px 22px;
+    }
+    #user-overlay h2 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--sb-ink);
+    }
+    #user-overlay p { color: var(--sb-ink-soft); }
+    #auth-email, #auth-password {
+      background: #fffdf6 !important;
+      border: 1.5px solid var(--sb-line) !important;
+      border-radius: 4px !important;
+      font-family: 'Inter Tight', sans-serif !important;
+      color: var(--sb-ink) !important;
+    }
+    #auth-email:focus, #auth-password:focus {
+      outline: none !important;
+      box-shadow: 3px 3px 0 var(--sb-eniko) !important;
+    }
+    #auth-submit {
+      background: var(--sb-eniko) !important;
+      color: #fff !important;
+      border: 1.5px solid var(--sb-line) !important;
+      box-shadow: 3px 3px 0 var(--sb-line) !important;
+      border-radius: 4px !important;
+      font-family: inherit !important;
+      font-weight: 700 !important;
+      transition: transform 80ms ease, box-shadow 80ms ease;
+    }
+    #auth-submit:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--sb-line) !important; }
+    #auth-submit:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--sb-line) !important; }
+    #auth-toggle { color: var(--sb-eniko) !important; font-weight: 600; }
+
+    #sync-bar {
+      padding: 8px 12px;
+      font-family: inherit;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    #sync-bar.synced { background: var(--sb-bg-card); color: var(--sb-ink); }
+    #sync-bar.saving { background: var(--sb-bg-card); color: var(--sb-ink-soft); }
+    #sync-bar.failed { background: #ffe4e1; color: #7a1f1f; }
+    .sync-label { font-weight: 700; }
+    .sync-detail { color: var(--sb-ink-soft); font-weight: 400; }
+
+    /* ── Sourberry calendar layout ─────────────────────── */
+    .top-strip {
+      display: flex !important;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 14px;
+      margin: 6px 0 12px;
+      flex-wrap: wrap;
+    }
+    .month-nav {
+      display: flex !important;
+      gap: 6px;
+      align-items: center;
+      flex-direction: row !important;
+    }
+    .month-nav .nav-btn,
+    .month-nav .today-btn {
+      padding: 6px 12px !important;
+      font-size: 0.78rem !important;
+      width: auto !important;
+      height: auto !important;
+      min-width: 0 !important;
+    }
+    #month-label {
+      font-family: 'Fraunces', Georgia, serif;
+      font-variation-settings: "opsz" 144;
+      font-weight: 800;
+      font-size: 1.6rem;
+      letter-spacing: -0.03em;
+      color: var(--sb-ink);
+      margin: 0;
+      text-align: right;
+      flex: 1 1 auto;
+    }
+    @media (max-width: 640px) {
+      .top-strip { flex-direction: column; align-items: stretch; }
+      #month-label { text-align: left; font-size: 1.4rem; }
+    }
+
+    /* Tighter cell layout — Sourberry-ish density */
+    .cal-grid {
+      gap: 4px !important;
+    }
+    .day {
+      min-height: 88px;
+      padding: 6px !important;
+      position: relative;
+    }
+    .day.other-month {
+      background: transparent;
+      border-color: transparent;
+      opacity: 0.35;
+      cursor: pointer;
+    }
+    .day.other-month .day-num { color: var(--sb-ink-soft); font-weight: 600; }
+    .day.other-month:hover { opacity: 0.6; background: var(--sb-bg-card); border-color: rgba(42,16,24,0.2); }
+
+    .day-num {
+      font-family: 'Fraunces', Georgia, serif !important;
+      font-variation-settings: "opsz" 144;
+      font-weight: 800 !important;
+      font-size: 1.05rem !important;
+      line-height: 1 !important;
+      color: var(--sb-ink) !important;
+    }
+    .day-top {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+    .bh-label {
+      font-size: 0.6rem !important;
+      padding: 1px 5px !important;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .agreed-chip {
+      font-size: 0.65rem !important;
+      padding: 1px 5px !important;
+    }
+    .slots {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 3px !important;
+      margin-top: 4px;
+    }
+    .slot-btn {
+      padding: 3px 0 !important;
+      font-size: 0.62rem !important;
+      min-height: 22px;
+      line-height: 1.1;
+    }
+    .slot-btn .slot-mark {
+      font-size: 0.5rem !important;
+      display: block;
+      margin-top: 1px;
+      opacity: 0.85;
+    }
+    .confirm-row {
+      font-size: 0.7rem !important;
+      margin-top: 4px !important;
+      gap: 4px;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
 </head>
@@ -747,15 +1087,11 @@
 
 <div class="top-strip">
   <div class="month-nav">
-    <button class="nav-btn" id="prev-btn" onclick="changeMonth(-1)">‹</button>
-    <div class="month-nav-center">
-      <h2 id="month-label"></h2>
-      <div style="text-align:center;margin-top:3px">
-        <button class="today-btn" onclick="goToday()">Today</button>
-      </div>
-    </div>
-    <button class="nav-btn" id="next-btn" onclick="changeMonth(1)">›</button>
+    <button class="nav-btn" id="prev-btn" onclick="changeMonth(-1)">‹ Prev</button>
+    <button class="today-btn" onclick="goToday()">Today</button>
+    <button class="nav-btn" id="next-btn" onclick="changeMonth(1)">Next ›</button>
   </div>
+  <h2 id="month-label"></h2>
 </div>
 
 <div id="holiday-mode-banner" class="mode-banner"></div>
@@ -1368,23 +1704,25 @@ function renderCalendar() {
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month+1, 0);
 
+  // v0.2 (Sourberry layout): always show 6 weeks × 7 days. Mon-first.
+  // Days outside the current month are dimmed via .other-month, not hidden,
+  // so the calendar grid is always 42 cells and never jumps height.
   let startDow = firstDay.getDay();
   startDow = (startDow + 6) % 7;
+  const gridStart = new Date(year, month, 1 - startDow);
 
-  for (let i = 0; i < startDow; i++) {
-    const empty = document.createElement('div');
-    empty.className = 'day empty';
-    grid.appendChild(empty);
-  }
-
-  for (let d = 1; d <= lastDay.getDate(); d++) {
-    const cellDate = new Date(year, month, d);
+  for (let i = 0; i < 42; i++) {
+    const cellDate = new Date(gridStart);
+    cellDate.setDate(gridStart.getDate() + i);
+    const inMonth = cellDate.getMonth() === month;
+    const d = cellDate.getDate();
     const key = isoDate(cellDate);
     const isPast = cellDate < today;
     const isToday = cellDate.getTime() === today.getTime();
 
     const cell = document.createElement('div');
     cell.className = 'day';
+    if (!inMonth) cell.classList.add('other-month');
     if (isPast) cell.classList.add('past');
     if (isToday) cell.classList.add('today-cell');
 
@@ -1400,6 +1738,17 @@ function renderCalendar() {
     numEl.textContent = d;
     top.appendChild(numEl);
     cell.appendChild(top);
+
+    // Out-of-month cells: render just the date number, dimmed. Click → jump to that month.
+    if (!inMonth) {
+      cell.style.cursor = 'pointer';
+      cell.addEventListener('click', () => {
+        viewDate = new Date(cellDate.getFullYear(), cellDate.getMonth(), 1);
+        renderCalendar(); renderBestDates(); renderWishlist(); updateNavBtns();
+      });
+      grid.appendChild(cell);
+      continue;
+    }
 
     // Shared/possible state is shown via border and slot styling only.
 
