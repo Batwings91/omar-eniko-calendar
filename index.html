@@ -1056,6 +1056,169 @@
       margin-top: 4px !important;
       gap: 4px;
     }
+
+    /* h1: 2-button group | title | single button */
+    header h1 { flex-wrap: wrap !important; row-gap: 6px; }
+    .h1-left { display: inline-flex; gap: 6px; align-items: center; }
+    .h1-title { flex: 0 1 auto; }
+
+    /* ── Mobile: stack slot pills, tighten cells, hide confirm text ─── */
+    @media (max-width: 640px) {
+      header h1 {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 8px !important;
+        font-size: 1rem !important;
+      }
+      .h1-left { justify-content: center; }
+      .h1-title { text-align: center; }
+      header h1 > button { align-self: center; }
+      .slots {
+        grid-template-columns: 1fr !important;
+        gap: 2px !important;
+      }
+      .slot-btn {
+        text-align: left !important;
+        padding: 3px 6px !important;
+        font-size: 0.7rem !important;
+        min-height: auto !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        gap: 4px;
+        line-height: 1.15;
+      }
+      .slot-btn .slot-mark {
+        display: inline !important;
+        margin: 0 !important;
+        font-size: 0.55rem !important;
+        opacity: 0.85;
+      }
+      .confirm-row {
+        font-size: 0.6rem !important;
+        gap: 3px;
+        justify-content: flex-start;
+      }
+      .confirm-row span { font-size: 0.6rem !important; }
+      .day { min-height: 0; padding: 4px !important; }
+      .day-num { font-size: 0.95rem !important; }
+      .plan-chip { font-size: 0.58rem !important; padding: 1px 4px !important; }
+    }
+
+    /* ── Plans panel + chips ──────────────────────────── */
+    .plans-panel.open {
+      padding: 14px;
+      background: var(--sb-bg-card);
+      border: 1.5px solid var(--sb-line);
+      box-shadow: 4px 4px 0 var(--sb-line);
+      border-radius: 6px;
+      margin: 8px 14px 14px;
+    }
+    .plans-panel h3 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      letter-spacing: -0.02em;
+      color: var(--sb-ink);
+      margin-bottom: 10px;
+    }
+    .plan-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .plan-form label {
+      display: flex; flex-direction: column; gap: 3px;
+      font-size: 0.75rem; font-weight: 600; color: var(--sb-ink-soft);
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .plan-form input, .plan-form textarea {
+      font-family: 'Inter Tight', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 400;
+      color: var(--sb-ink);
+      background: #fffdf6;
+      border: 1.5px solid var(--sb-line);
+      border-radius: 4px;
+      padding: 6px 8px;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    .plan-form input:focus, .plan-form textarea:focus {
+      outline: none;
+      box-shadow: 3px 3px 0 var(--sb-eniko);
+    }
+    .plan-form-row.two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .plan-form-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+    .plan-form-actions .plan-delete {
+      margin-left: auto;
+      background: #ffe4e1 !important;
+      color: #7a1f1f !important;
+    }
+    .plans-list { display: flex; flex-direction: column; gap: 8px; margin: 8px 0 12px; }
+    .plans-empty {
+      font-size: 0.85rem; color: var(--sb-ink-soft); font-style: italic; padding: 4px 0;
+    }
+    .plan-item {
+      background: var(--sb-bg-card);
+      border: 1.5px solid var(--sb-line);
+      box-shadow: 2px 2px 0 var(--sb-line);
+      border-radius: 4px;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: transform 80ms ease, box-shadow 80ms ease;
+    }
+    .plan-item:hover { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--sb-line); }
+    .plan-item .plan-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 800;
+      font-size: 0.98rem;
+      color: var(--sb-ink);
+    }
+    .plan-item .plan-date {
+      font-size: 0.75rem;
+      color: var(--sb-ink-soft);
+      letter-spacing: 0.04em;
+      margin-top: 2px;
+    }
+    .plan-item .plan-time { color: var(--sb-eniko); font-weight: 600; }
+    .plan-item .plan-loc { font-size: 0.78rem; color: var(--sb-ink-soft); margin-top: 3px; }
+    .plan-item .plan-notes { font-size: 0.78rem; color: var(--sb-ink-soft); margin-top: 3px; font-style: italic; }
+    .plans-past summary {
+      font-size: 0.75rem; color: var(--sb-ink-soft); cursor: pointer; padding: 6px 0;
+      text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+    }
+
+    /* Calendar cell plan chip */
+    .plan-chip {
+      display: block;
+      width: 100%;
+      margin-top: 3px;
+      padding: 2px 5px;
+      background: var(--sb-eniko);
+      color: #fff;
+      border: 1.2px solid var(--sb-line);
+      border-radius: 3px;
+      font-family: inherit;
+      font-size: 0.62rem;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      letter-spacing: 0.01em;
+    }
+    .plan-chip:hover { filter: brightness(1.1); }
+
+    /* Header actions row */
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
 </head>
@@ -1081,7 +1244,14 @@
 </div>
 
 <header>
-  <h1><button class="wishlist-edit-btn" onclick="manageHolidays(event)">Manage holidays</button><span>Omar & Enikő 🗓️</span><button class="wishlist-edit-btn" onclick="toggleWishlistOpen(event)">Date wishlist</button></h1>
+  <h1>
+    <span class="h1-left">
+      <button class="wishlist-edit-btn" onclick="manageHolidays(event)">Holidays</button>
+      <button class="wishlist-edit-btn" onclick="togglePlansPanel(event)">Plans</button>
+    </span>
+    <span class="h1-title">Omar & Enikő 🗓️</span>
+    <button class="wishlist-edit-btn" onclick="toggleWishlistOpen(event)">Date wishlist</button>
+  </h1>
   <div class="you-are" id="you-are-line"></div>
   <div class="last-updated" id="last-updated-line"></div>
 </header>
@@ -1097,6 +1267,7 @@
 
 <div id="holiday-mode-banner" class="mode-banner"></div>
 <div id="holiday-panel" class="holiday-panel"></div>
+<div id="plans-panel" class="holiday-panel plans-panel"></div>
 <div id="eniko-tip" style="display:none"></div>
 
 <div id="best-dates-section"></div>
@@ -1159,7 +1330,7 @@ let currentUser = null;       // 'omar' | 'eniko', set after Supabase auth
 let currentSession = null;
 let realtimeChannel = null;
 let viewDate = new Date();
-let data = { omar:{}, eniko:{}, notes:{omar:{},eniko:{}}, lastUpdated:{}, wishlist:[], dayTags:{}, agreedDates:{} };
+let data = { omar:{}, eniko:{}, notes:{omar:{},eniko:{}}, lastUpdated:{}, wishlist:[], dayTags:{}, agreedDates:{}, plans:[] };
 let bankHolidays = {};
 let weatherData = {};
 let activeNoteCell = null;
@@ -1168,6 +1339,8 @@ let lastDeletedWishlistItem = null;
 let touchDragIndex = null;
 let holidayMode = false;
 let holidayEditingDate = null;
+let plansOpen = false;
+let editingPlanId = null;        // null = closed, 'new' = adding, uuid = editing
 let enikoTipDismissed = sessionStorage.getItem('eniko_tip_dismissed') === '1';
 
 viewDate.setDate(1);
@@ -1318,7 +1491,7 @@ async function changeUser() {
   }
   await supabase.auth.signOut();
   currentUser = null;
-  data = { omar:{}, eniko:{}, notes:{omar:{},eniko:{}}, lastUpdated:{}, wishlist:[], dayTags:{}, agreedDates:{} };
+  data = { omar:{}, eniko:{}, notes:{omar:{},eniko:{}}, lastUpdated:{}, wishlist:[], dayTags:{}, agreedDates:{}, plans:[] };
   document.getElementById('user-overlay').style.display = 'flex';
   setAuthStatus('');
 }
@@ -1794,6 +1967,20 @@ function renderCalendar() {
       top.appendChild(agreedChip);
     }
 
+    // Plan chips: any plan whose date range covers this cell.
+    const cellPlans = (data.plans || []).filter(p => p.start_date <= key && p.end_date >= key);
+    cellPlans.forEach(p => {
+      const chip = document.createElement('button');
+      chip.className = 'plan-chip';
+      if (p.start_date === key) chip.classList.add('plan-chip-start');
+      if (p.end_date === key) chip.classList.add('plan-chip-end');
+      const titleText = p.event_time ? `${p.title} · ${p.event_time}` : p.title;
+      chip.textContent = titleText;
+      chip.title = [p.title, p.event_time, p.location, p.notes].filter(Boolean).join(' · ');
+      chip.addEventListener('click', (e) => { e.stopPropagation(); startEditPlan(p.id); });
+      cell.appendChild(chip);
+    });
+
     if (holidayMode) {
       cell.style.cursor = 'pointer';
       cell.addEventListener('click', () => {
@@ -1887,18 +2074,19 @@ function toggleSlot(key, slot) {
 async function loadData() {
   setSyncBar('saving', 'Loading…');
   try {
-    const [avail, notes, wishlist, tags, agreed, lastUpd] = await Promise.all([
+    const [avail, notes, wishlist, tags, agreed, lastUpd, plans] = await Promise.all([
       supabase.from('availability').select('member_key,date,slot,state'),
       supabase.from('date_notes').select('member_key,date,note'),
       supabase.from('wishlist_items').select('id,text,done,position,added_by,added_at,reordered_by,reordered_at').order('position', { ascending: true }),
       supabase.from('day_tags').select('date,tag_key,label,set_by,set_at'),
       supabase.from('agreed_dates').select('date,confirmed_by,confirmed_at'),
       supabase.from('last_updated').select('member_key,at'),
+      supabase.from('plans').select('id,start_date,end_date,title,event_time,location,notes,added_by,added_at,updated_at').order('start_date', { ascending: true }),
     ]);
-    const firstError = [avail, notes, wishlist, tags, agreed, lastUpd].find(r => r.error);
+    const firstError = [avail, notes, wishlist, tags, agreed, lastUpd, plans].find(r => r.error);
     if (firstError) throw firstError.error;
 
-    const blob = { omar:{}, eniko:{}, notes:{omar:{},eniko:{}}, lastUpdated:{}, wishlist:[], dayTags:{}, agreedDates:{} };
+    const blob = { omar:{}, eniko:{}, notes:{omar:{},eniko:{}}, lastUpdated:{}, wishlist:[], dayTags:{}, agreedDates:{}, plans:[] };
     (avail.data || []).forEach(r => {
       if (!blob[r.member_key][r.date]) blob[r.member_key][r.date] = {};
       blob[r.member_key][r.date][r.slot] = r.state;
@@ -1926,6 +2114,11 @@ async function loadData() {
       blob.agreedDates[r.date] = { confirmed: true, by: r.confirmed_by, at: r.confirmed_at };
     });
     (lastUpd.data || []).forEach(r => { blob.lastUpdated[r.member_key] = r.at; });
+    blob.plans = (plans.data || []).map(r => ({
+      id: r.id, start_date: r.start_date, end_date: r.end_date, title: r.title,
+      event_time: r.event_time || '', location: r.location || '', notes: r.notes || '',
+      added_by: r.added_by, added_at: r.added_at, updated_at: r.updated_at,
+    }));
 
     data = blob;
     setSyncBar('synced', `Synced ${timeStr()}`);
@@ -1983,6 +2176,42 @@ async function writeWishlistFull(items) {
   await touchLastUpdated();
 }
 
+// ── Plans (shared bookings) ────────────────────────────────
+async function writePlanCreate(plan) {
+  const { data: row, error } = await supabase.from('plans').insert({
+    start_date: plan.start_date,
+    end_date: plan.end_date,
+    title: plan.title,
+    event_time: plan.event_time || null,
+    location: plan.location || null,
+    notes: plan.notes || null,
+    added_by: currentUser || 'unknown',
+  }).select().single();
+  if (error) throw error;
+  await touchLastUpdated();
+  return row;
+}
+
+async function writePlanUpdate(id, patch) {
+  const cleaned = {
+    start_date: patch.start_date,
+    end_date: patch.end_date,
+    title: patch.title,
+    event_time: patch.event_time || null,
+    location: patch.location || null,
+    notes: patch.notes || null,
+  };
+  const { error } = await supabase.from('plans').update(cleaned).eq('id', id);
+  if (error) throw error;
+  await touchLastUpdated();
+}
+
+async function writePlanDelete(id) {
+  const { error } = await supabase.from('plans').delete().eq('id', id);
+  if (error) throw error;
+  await touchLastUpdated();
+}
+
 async function touchLastUpdated() {
   if (!currentUser) return;
   const at = new Date().toISOString();
@@ -2004,6 +2233,7 @@ function subscribeRealtime() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'day_tags' },       () => debouncedReload())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'agreed_dates' },   () => debouncedReload())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'last_updated' },   () => debouncedReload())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'plans' },          () => debouncedReload())
     .subscribe();
 }
 
@@ -2016,7 +2246,194 @@ function debouncedReload() {
     renderCalendar();
     renderBestDates();
     renderWishlist();
+    renderPlansPanel();
   }, 400);
+}
+
+// ── Plans UI ───────────────────────────────────────────────
+function togglePlansPanel(event) {
+  if (event) event.stopPropagation();
+  plansOpen = !plansOpen;
+  if (!plansOpen) editingPlanId = null;
+  renderPlansPanel();
+}
+
+function closePlansPanel() {
+  plansOpen = false;
+  editingPlanId = null;
+  renderPlansPanel();
+}
+
+function startNewPlan(prefillDate) {
+  const today = isoDate(new Date());
+  const startDate = prefillDate || today;
+  editingPlanId = 'new';
+  plansOpen = true;
+  renderPlansPanel(() => {
+    const s = document.getElementById('plan-start-date');
+    if (s) s.value = startDate;
+    const e = document.getElementById('plan-end-date');
+    if (e) e.value = startDate;
+    const t = document.getElementById('plan-title');
+    if (t) t.focus();
+  });
+}
+
+function startEditPlan(id) {
+  editingPlanId = id;
+  plansOpen = true;
+  renderPlansPanel(() => {
+    const plan = (data.plans || []).find(p => p.id === id);
+    if (!plan) return;
+    const get = i => document.getElementById(i);
+    if (get('plan-start-date')) get('plan-start-date').value = plan.start_date;
+    if (get('plan-end-date')) get('plan-end-date').value = plan.end_date;
+    if (get('plan-title')) get('plan-title').value = plan.title || '';
+    if (get('plan-time')) get('plan-time').value = plan.event_time || '';
+    if (get('plan-location')) get('plan-location').value = plan.location || '';
+    if (get('plan-notes')) get('plan-notes').value = plan.notes || '';
+  });
+}
+
+function cancelPlanForm() {
+  editingPlanId = null;
+  renderPlansPanel();
+}
+
+async function savePlan() {
+  const get = i => document.getElementById(i).value.trim();
+  const plan = {
+    start_date: get('plan-start-date'),
+    end_date: get('plan-end-date'),
+    title: get('plan-title'),
+    event_time: get('plan-time'),
+    location: get('plan-location'),
+    notes: get('plan-notes'),
+  };
+  if (!plan.start_date || !plan.end_date) { alert('Pick a start and end date.'); return; }
+  if (!plan.title) { alert('Give the plan a title.'); return; }
+  if (plan.end_date < plan.start_date) { alert('End date must be on or after the start date.'); return; }
+  setSyncBar('saving', 'Saving…');
+  try {
+    if (editingPlanId === 'new') {
+      const row = await writePlanCreate(plan);
+      data.plans.push({
+        id: row.id, start_date: row.start_date, end_date: row.end_date, title: row.title,
+        event_time: row.event_time || '', location: row.location || '', notes: row.notes || '',
+        added_by: row.added_by, added_at: row.added_at, updated_at: row.updated_at,
+      });
+    } else {
+      await writePlanUpdate(editingPlanId, plan);
+      const idx = data.plans.findIndex(p => p.id === editingPlanId);
+      if (idx >= 0) data.plans[idx] = Object.assign(data.plans[idx], plan);
+    }
+    editingPlanId = null;
+    setSyncBar('synced', `Synced ${timeStr()}`);
+  } catch (e) {
+    console.error('savePlan failed:', e);
+    setSyncBar('failed', 'Save failed — tap to retry');
+  }
+  renderPlansPanel();
+  renderCalendar();
+}
+
+async function deletePlan(id) {
+  const plan = (data.plans || []).find(p => p.id === id);
+  if (!plan) return;
+  if (!confirm(`Delete "${plan.title}"?`)) return;
+  setSyncBar('saving', 'Saving…');
+  try {
+    await writePlanDelete(id);
+    data.plans = data.plans.filter(p => p.id !== id);
+    if (editingPlanId === id) editingPlanId = null;
+    setSyncBar('synced', `Synced ${timeStr()}`);
+  } catch (e) {
+    console.error('deletePlan failed:', e);
+    setSyncBar('failed', 'Save failed — tap to retry');
+  }
+  renderPlansPanel();
+  renderCalendar();
+}
+
+function formatPlanDateRange(plan) {
+  const fmt = iso => {
+    const d = new Date(iso + 'T12:00:00');
+    return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  };
+  if (plan.start_date === plan.end_date) return fmt(plan.start_date);
+  return `${fmt(plan.start_date)} → ${fmt(plan.end_date)}`;
+}
+
+function renderPlansPanel(afterRender) {
+  const panel = document.getElementById('plans-panel');
+  if (!panel) return;
+  if (!plansOpen) {
+    panel.classList.remove('open');
+    panel.innerHTML = '';
+    return;
+  }
+  panel.classList.add('open');
+  const plans = (data.plans || []).slice().sort((a,b) => a.start_date.localeCompare(b.start_date));
+  const today = isoDate(new Date());
+  const upcoming = plans.filter(p => p.end_date >= today);
+  const past = plans.filter(p => p.end_date < today);
+
+  const editing = editingPlanId !== null;
+  let html = `<h3>Plans</h3>`;
+
+  if (editing) {
+    html += `
+      <div class="plan-form">
+        <div class="plan-form-row two">
+          <label>Start date<input type="date" id="plan-start-date"></label>
+          <label>End date<input type="date" id="plan-end-date"></label>
+        </div>
+        <label>Title<input type="text" id="plan-title" placeholder="Dinner with Adam &amp; Rachel" maxlength="120"></label>
+        <label>Time (optional)<input type="text" id="plan-time" placeholder="7pm" maxlength="40"></label>
+        <label>Location (optional)<input type="text" id="plan-location" placeholder="The Wolseley" maxlength="120"></label>
+        <label>Notes (optional)<textarea id="plan-notes" rows="2" placeholder="Booking ref, who's coming…"></textarea></label>
+        <div class="plan-form-actions">
+          <button class="holiday-chip" onclick="savePlan()">Save</button>
+          <button class="holiday-chip" onclick="cancelPlanForm()">Cancel</button>
+          ${editingPlanId !== 'new' ? `<button class="holiday-chip plan-delete" onclick="deletePlan('${editingPlanId}')">Delete</button>` : ''}
+        </div>
+      </div>`;
+  } else {
+    html += `<button class="holiday-chip" onclick="startNewPlan()">+ Add plan</button>`;
+  }
+
+  html += `<div class="plans-list">`;
+  if (upcoming.length === 0 && !editing) {
+    html += `<p class="plans-empty">No upcoming plans.</p>`;
+  } else if (!editing) {
+    upcoming.forEach(p => {
+      html += planRowHtml(p);
+    });
+  }
+  if (!editing && past.length) {
+    html += `<details class="plans-past"><summary>Past (${past.length})</summary>`;
+    past.slice().reverse().forEach(p => { html += planRowHtml(p); });
+    html += `</details>`;
+  }
+  html += `</div>`;
+
+  if (!editing) html += `<button class="holiday-chip" onclick="closePlansPanel()">Done</button>`;
+
+  panel.innerHTML = html;
+  if (typeof afterRender === 'function') afterRender();
+}
+
+function planRowHtml(p) {
+  const dateLabel = escapeHtml(formatPlanDateRange(p));
+  const time = p.event_time ? `<span class="plan-time">· ${escapeHtml(p.event_time)}</span>` : '';
+  const loc = p.location ? `<div class="plan-loc">📍 ${escapeHtml(p.location)}</div>` : '';
+  const notes = p.notes ? `<div class="plan-notes">${escapeHtml(p.notes)}</div>` : '';
+  return `
+    <div class="plan-item" onclick="startEditPlan('${p.id}')">
+      <div class="plan-title">${escapeHtml(p.title)}</div>
+      <div class="plan-date">${dateLabel}${time}</div>
+      ${loc}${notes}
+    </div>`;
 }
 
 function toggleConfirmedDate(key, confirmed) {
