@@ -1127,9 +1127,55 @@
       font-size: 0.85rem;
       font-weight: 800;
       color: #1f8f4a;
-      margin-left: auto;
+      margin-left: 2px;
       line-height: 1;
+      flex-shrink: 0;
     }
+
+    /* Sync-bar coloured dots so labels are unambiguous. */
+    .sync-dot {
+      display: inline-block;
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      border: 1.2px solid var(--sb-line);
+      margin-right: 4px;
+      vertical-align: middle;
+      box-sizing: border-box;
+    }
+    .sync-dot-omar { background: var(--sb-omar); }
+    .sync-dot-eniko { background: var(--sb-eniko); }
+
+    /* Holiday-mode banner: stands out so it's clear you're in edit mode. */
+    .mode-banner {
+      background: #ffe7c1 !important;
+      border: 1.5px solid #d97a1f !important;
+      box-shadow: 4px 4px 0 var(--sb-line) !important;
+      color: #6b3a0a !important;
+      font-weight: 700 !important;
+      text-align: center;
+      padding: 10px 12px;
+    }
+
+    /* Plans panel top action row */
+    .plans-top-actions {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .plans-top-actions .holiday-chip { flex: 1; }
+
+    /* Wishlist heading: match Plans heading style */
+    .wishlist .wishlist-head h3,
+    .wishlist h3 {
+      font-family: 'Fraunces', Georgia, serif !important;
+      font-variation-settings: "opsz" 144 !important;
+      font-weight: 800 !important;
+      font-size: 1.2rem !important;
+      letter-spacing: -0.02em !important;
+      color: var(--sb-ink) !important;
+    }
+    /* Drop the orange left-bar accent that clashes with the Sourberry look */
+    .wishlist { border-left: none !important; }
 
     /* h1: 2-button group | title | single button */
     header h1 { flex-wrap: wrap !important; row-gap: 6px; }
@@ -1139,7 +1185,10 @@
     /* ── Mobile tweaks ─────────────────────────────────── */
     @media (max-width: 640px) {
       header h1 {
-        font-size: 1.1rem !important;
+        font-family: 'Inter Tight', system-ui, sans-serif !important;
+        font-variation-settings: normal !important;
+        font-size: 1.15rem !important;
+        letter-spacing: -0.01em !important;
         gap: 8px !important;
       }
       .you-are { font-size: 0.78rem; }
@@ -2408,6 +2457,15 @@ function renderPlansPanel(afterRender) {
   const editing = editingPlanId !== null;
   let html = `<h3>Plans</h3>`;
 
+  // Top action row (always visible): Add plan + Done side by side
+  if (!editing) {
+    html += `
+      <div class="plans-top-actions">
+        <button class="holiday-chip" onclick="startNewPlan()">+ Add plan</button>
+        <button class="holiday-chip" onclick="closePlansPanel()">Done</button>
+      </div>`;
+  }
+
   if (editing) {
     html += `
       <div class="plan-form">
@@ -2425,8 +2483,6 @@ function renderPlansPanel(afterRender) {
           ${editingPlanId !== 'new' ? `<button class="holiday-chip plan-delete" onclick="deletePlan('${editingPlanId}')">Delete</button>` : ''}
         </div>
       </div>`;
-  } else {
-    html += `<button class="holiday-chip" onclick="startNewPlan()">+ Add plan</button>`;
   }
 
   html += `<div class="plans-list">`;
@@ -2443,8 +2499,6 @@ function renderPlansPanel(afterRender) {
     html += `</details>`;
   }
   html += `</div>`;
-
-  if (!editing) html += `<button class="holiday-chip" onclick="closePlansPanel()">Done</button>`;
 
   panel.innerHTML = html;
   if (typeof afterRender === 'function') afterRender();
@@ -2592,7 +2646,7 @@ function fmtLastUpdated(isoStr) {
 function syncBarText() {
   const oTs = fmtLastUpdated(data.lastUpdated?.omar);
   const eTs = fmtLastUpdated(data.lastUpdated?.eniko);
-  return `Omar: ${oTs}  |  Enikő: ${eTs}`;
+  return `<span class="sync-dot sync-dot-omar"></span>Omar: ${oTs}  &nbsp; <span class="sync-dot sync-dot-eniko"></span>Enikő: ${eTs}`;
 }
 
 function setSyncBar(state, msg) {
