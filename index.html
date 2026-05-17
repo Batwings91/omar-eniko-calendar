@@ -734,6 +734,8 @@
       --sb-line: #2a1018;
       --sb-omar: #FF6B35;
       --sb-eniko: #9B59B6;
+      --sb-plan: #3a6e8f;       /* slate blue — plans live in their own colour */
+      --sb-good: #1f8f4a;
     }
     html, body {
       background: var(--sb-bg);
@@ -873,8 +875,8 @@
       letter-spacing: 0.1em;
       color: var(--sb-eniko);
     }
-    .day.has-shared:not(.today-cell) {
-      border: 1.8px solid var(--sb-eniko);
+    .day.has-shared:not(.today-cell):not(.past) {
+      border: 1.8px solid var(--sb-good, #1f8f4a);
     }
 
     .slot-btn {
@@ -896,6 +898,12 @@
       font-family: inherit;
       font-weight: 600;
       color: var(--sb-ink);
+      display: inline-block;
+      line-height: 1.1;
+      font-size: 0.55rem;
+      padding: 1px 6px;
+      letter-spacing: 0.05em;
+      margin: 0;
     }
     .agreed-chip { background: var(--sb-eniko); color: #fff; }
 
@@ -965,16 +973,25 @@
     #auth-toggle { color: var(--sb-eniko) !important; font-weight: 600; }
 
     #sync-bar {
-      padding: 8px 12px;
+      padding: 6px 12px 14px;
       font-family: inherit;
-      font-weight: 600;
+      font-weight: 500;
+      font-size: 0.62rem !important;
       letter-spacing: 0.02em;
     }
-    #sync-bar.synced { background: transparent !important; color: var(--sb-ink); }
+    #sync-bar.synced { background: transparent !important; color: var(--sb-ink-soft); }
     #sync-bar.saving { background: transparent !important; color: var(--sb-ink-soft); }
     #sync-bar.failed { background: #ffe4e1 !important; color: #7a1f1f; }
     .sync-label { font-weight: 700; font-size: inherit; }
-    .sync-detail { color: var(--sb-ink-soft); font-weight: 600; font-size: inherit !important; opacity: 1 !important; }
+    .sync-detail { color: var(--sb-ink-soft); font-weight: 500; font-size: inherit !important; opacity: 1 !important; }
+    .sync-dot { width: 7px; height: 7px; }
+
+    /* Wishlist-mode: hide the calendar and surrounding chrome */
+    body.wishlist-mode .month-row,
+    body.wishlist-mode .cal-wrap,
+    body.wishlist-mode .key-bar,
+    body.wishlist-mode #best-dates-section,
+    body.wishlist-mode #eniko-tip { display: none !important; }
 
     /* ── Sourberry calendar layout ─────────────────────── */
     .toolbar {
@@ -1041,21 +1058,46 @@
       display: none;
       flex: 1 1 0;
       align-items: center;
-      gap: 8px;
-      background: var(--sb-eniko);
+      gap: 6px;
+      background: var(--sb-plan);
       color: #fff;
       border: 1.5px solid var(--sb-line);
       box-shadow: 3px 3px 0 var(--sb-line);
       border-radius: 4px;
-      padding: 6px 10px;
-      cursor: pointer;
+      padding: 6px 6px 6px 10px;
       font-size: 0.8rem;
       min-width: 0;
       overflow: hidden;
     }
+    .plan-peek-body {
+      flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .plan-peek-close {
+      flex-shrink: 0;
+      background: transparent;
+      border: 1.5px solid rgba(255,255,255,0.55);
+      color: #fff;
+      border-radius: 4px;
+      width: 22px; height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .plan-peek-close:hover { background: rgba(255,255,255,0.15); }
     @media (max-width: 640px) {
-      .plan-peek { font-size: 0.7rem; padding: 5px 8px; gap: 5px; }
+      .plan-peek { font-size: 0.7rem; padding: 5px 5px 5px 8px; gap: 4px; }
       .plan-peek-edit { display: none; }
+      .plan-peek-close { width: 20px; height: 20px; }
     }
     .plan-peek-title {
       font-weight: 700;
@@ -1404,7 +1446,7 @@
       width: 100%;
       margin-top: 3px;
       padding: 2px 5px;
-      background: var(--sb-eniko);
+      background: var(--sb-plan);
       color: #fff;
       border: 1.2px solid var(--sb-line);
       border-radius: 3px;
@@ -1473,7 +1515,10 @@
 
 <div class="month-row">
   <h2 id="month-label"></h2>
-  <div id="plan-peek" class="plan-peek" style="display:none" onclick="planPeekClicked()" aria-label="Plan preview, tap to edit"></div>
+  <div id="plan-peek" class="plan-peek" style="display:none">
+    <div class="plan-peek-body" onclick="planPeekClicked()"></div>
+    <button class="plan-peek-close" onclick="clearPlanPeek()" aria-label="Dismiss preview">✕</button>
+  </div>
 </div>
 
 <div id="holiday-mode-banner" class="mode-banner"></div>
@@ -1749,11 +1794,23 @@ function changeMonth(delta) {
 }
 
 function goToday() {
+  // Today doubles as a 'reset to calendar' button — close any open modes.
+  holidayMode = false;
+  holidayEditingDate = null;
+  plansOpen = false;
+  editingPlanId = null;
+  wishlistOpen = false;
+  document.body.classList.remove('wishlist-mode');
+  clearPlanPeek();
   viewDate = new Date(today.getFullYear(), today.getMonth(), 1);
+  renderHolidayModeBanner();
+  renderHolidayPanel();
+  renderPlansPanel();
   renderCalendar();
   renderBestDates();
   renderWishlist();
   updateNavBtns();
+  updateToolbarActive();
 
   requestAnimationFrame(() => {
     const todayCell = document.querySelector('.day.today-cell');
@@ -1877,6 +1934,7 @@ function toggleWishlistOpen(event) {
     editingPlanId = null;
   }
   clearPlanPeek();
+  document.body.classList.toggle('wishlist-mode', wishlistOpen);
   renderCalendar();
   renderHolidayModeBanner();
   renderHolidayPanel();
@@ -2460,9 +2518,10 @@ function showPlanPeek(plan) {
   peekedPlanId = plan.id;
   const peek = document.getElementById('plan-peek');
   if (!peek) return;
+  const body = peek.querySelector('.plan-peek-body');
   const dateLabel = formatPlanDateRange(plan);
   const extras = [plan.event_time, plan.location].filter(Boolean).join(' · ');
-  peek.innerHTML = `
+  body.innerHTML = `
     <span class="plan-peek-title">${escapeHtml(plan.title)}</span>
     <span class="plan-peek-meta">${escapeHtml(dateLabel + (extras ? ' · ' + extras : ''))}</span>
     <span class="plan-peek-edit">Tap to edit ›</span>`;
@@ -2473,7 +2532,12 @@ function showPlanPeek(plan) {
 function clearPlanPeek() {
   peekedPlanId = null;
   const peek = document.getElementById('plan-peek');
-  if (peek) { peek.style.display = 'none'; peek.innerHTML = ''; }
+  if (peek) {
+    peek.style.display = 'none';
+    const body = peek.querySelector('.plan-peek-body');
+    if (body) body.innerHTML = '';
+  }
+  renderCalendar();
 }
 
 function planPeekClicked() {
@@ -2508,6 +2572,7 @@ function togglePlansPanel(event) {
   } else {
     editingPlanId = null;
   }
+  document.body.classList.remove('wishlist-mode');
   clearPlanPeek();
   renderCalendar();
   renderHolidayModeBanner();
@@ -2737,6 +2802,7 @@ function manageHolidays(event) {
   } else {
     holidayEditingDate = null;
   }
+  document.body.classList.remove('wishlist-mode');
   clearPlanPeek();
   renderCalendar();
   renderHolidayModeBanner();
