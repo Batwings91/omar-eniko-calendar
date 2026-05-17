@@ -1003,11 +1003,11 @@
     .toolbar-btn:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 var(--sb-line); }
     .toolbar-btn:disabled { opacity: 0.4; box-shadow: 1px 1px 0 var(--sb-line); }
     #month-label {
-      font-family: 'Fraunces', Georgia, serif;
-      font-variation-settings: "opsz" 144;
-      font-weight: 800;
-      font-size: 1.6rem;
-      letter-spacing: -0.03em;
+      font-family: 'Inter Tight', system-ui, sans-serif !important;
+      font-variation-settings: normal !important;
+      font-weight: 700;
+      font-size: 1.4rem;
+      letter-spacing: -0.01em;
       color: var(--sb-ink);
       margin: 0 14px 10px;
     }
@@ -1123,14 +1123,15 @@
       background: var(--sb-bg);
       border: 1.5px dashed var(--sb-eniko);
     }
-    .slot-tick {
-      font-size: 0.85rem;
-      font-weight: 800;
-      color: #1f8f4a;
-      margin-left: 2px;
-      line-height: 1;
-      flex-shrink: 0;
+    /* Row highlight when both members are free — replaces the tick. */
+    .slot-row.both-free {
+      background: rgba(31, 143, 74, 0.13);
+      border-radius: 3px;
+      margin: 0 -2px;
+      padding: 0 3px;
     }
+    .slot-row.both-free .slot-letter { color: #156a36; font-weight: 800; }
+    .slot-row.both-free .slot-dot { border-color: #156a36; }
 
     /* Sync-bar coloured dots so labels are unambiguous. */
     .sync-dot {
@@ -1152,17 +1153,54 @@
       box-shadow: 4px 4px 0 var(--sb-line) !important;
       color: #6b3a0a !important;
       font-weight: 700 !important;
-      text-align: center;
       padding: 10px 12px;
-    }
-
-    /* Plans panel top action row */
-    .plans-top-actions {
-      display: flex;
+      align-items: center;
       gap: 8px;
-      margin-bottom: 12px;
     }
-    .plans-top-actions .holiday-chip { flex: 1; }
+    .mode-banner-text { flex: 1; }
+    .mode-banner-close {
+      flex-shrink: 0;
+      background: transparent;
+      border: 1.5px solid #6b3a0a;
+      color: #6b3a0a;
+      border-radius: 4px;
+      width: 26px; height: 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .mode-banner-close:hover { background: rgba(107,58,10,0.1); }
+
+    /* Panel head pattern: heading on left, close × on the right */
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .panel-head h3 { margin: 0 !important; }
+    .panel-close {
+      flex-shrink: 0;
+      background: transparent;
+      border: 1.5px solid var(--sb-line);
+      color: var(--sb-ink);
+      border-radius: 4px;
+      width: 28px; height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .panel-close:hover { background: rgba(26,10,20,0.05); }
+    .plans-add { display: block; width: 100%; margin-bottom: 12px; text-align: center; }
 
     /* Wishlist heading: match Plans heading style */
     .wishlist .wishlist-head h3,
@@ -1904,11 +1942,13 @@ function renderHolidayModeBanner() {
   if (!el) return;
   if (!holidayMode) {
     el.style.display = 'none';
-    el.textContent = '';
+    el.innerHTML = '';
     return;
   }
-  el.style.display = 'block';
-  el.textContent = 'Holiday mode on — tap a day to set Annual leave or Half term.';
+  el.style.display = 'flex';
+  el.innerHTML = `
+    <span class="mode-banner-text">Holiday mode on — tap a day to set Annual leave or Half term.</span>
+    <button class="mode-banner-close" onclick="manageHolidays(event)" aria-label="Exit holiday mode">✕</button>`;
 }
 
 function renderHolidayPanel() {
@@ -2088,6 +2128,7 @@ function renderCalendar() {
         const omarState  = getSlotState('omar',  key, slot);
         const enikoState = getSlotState('eniko', key, slot);
         const bothFree = omarState === 'free' && enikoState === 'free';
+        if (bothFree) row.classList.add('both-free');
 
         const label = document.createElement('span');
         label.className = 'slot-letter';
@@ -2106,14 +2147,6 @@ function renderCalendar() {
             dot.disabled = true;
           }
           row.appendChild(dot);
-        }
-
-        if (bothFree) {
-          const tick = document.createElement('span');
-          tick.className = 'slot-tick';
-          tick.textContent = '✓';
-          tick.title = 'Both free';
-          row.appendChild(tick);
         }
 
         slotsEl.appendChild(row);
@@ -2455,15 +2488,14 @@ function renderPlansPanel(afterRender) {
   const past = plans.filter(p => p.end_date < today);
 
   const editing = editingPlanId !== null;
-  let html = `<h3>Plans</h3>`;
+  let html = `
+    <div class="panel-head">
+      <h3>Plans</h3>
+      <button class="panel-close" onclick="closePlansPanel()" aria-label="Close plans">✕</button>
+    </div>`;
 
-  // Top action row (always visible): Add plan + Done side by side
   if (!editing) {
-    html += `
-      <div class="plans-top-actions">
-        <button class="holiday-chip" onclick="startNewPlan()">+ Add plan</button>
-        <button class="holiday-chip" onclick="closePlansPanel()">Done</button>
-      </div>`;
+    html += `<button class="holiday-chip plans-add" onclick="startNewPlan()">+ Add plan</button>`;
   }
 
   if (editing) {
