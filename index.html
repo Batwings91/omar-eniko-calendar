@@ -859,10 +859,21 @@
     .day.empty { background: transparent; border-color: transparent; }
     .day.past { opacity: 0.55; }
     .day.today-cell {
-      border: 1.8px solid var(--sb-line);
-      box-shadow: 2px 2px 0 var(--sb-line);
+      background: #fff8c4 !important;
+      border: 2.5px solid var(--sb-line) !important;
+      box-shadow: 3px 3px 0 var(--sb-line);
     }
-    .day.has-shared {
+    .day.today-cell .day-num { color: var(--sb-line); }
+    .day.today-cell::before {
+      content: "TODAY";
+      position: absolute;
+      top: 4px; right: 4px;
+      font-size: 0.55rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: var(--sb-eniko);
+    }
+    .day.has-shared:not(.today-cell) {
       border: 1.8px solid var(--sb-eniko);
     }
 
@@ -1003,8 +1014,9 @@
     .toolbar-btn:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 var(--sb-line); }
     .toolbar-btn:disabled { opacity: 0.4; box-shadow: 1px 1px 0 var(--sb-line); }
     .toolbar-btn.active {
-      background: #f9e85c !important;
-      color: var(--sb-ink) !important;
+      background: #ffe7c1 !important;
+      border-color: #d97a1f !important;
+      color: #6b3a0a !important;
       box-shadow: 3px 3px 0 var(--sb-line);
     }
     #month-label {
@@ -1020,13 +1032,14 @@
     .month-row {
       display: flex;
       align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
+      gap: 10px;
+      flex-wrap: nowrap;
       margin: 0 14px 10px;
+      min-width: 0;
     }
     .plan-peek {
       display: none;
-      flex: 1 1 auto;
+      flex: 1 1 0;
       align-items: center;
       gap: 8px;
       background: var(--sb-eniko);
@@ -1036,8 +1049,13 @@
       border-radius: 4px;
       padding: 6px 10px;
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       min-width: 0;
+      overflow: hidden;
+    }
+    @media (max-width: 640px) {
+      .plan-peek { font-size: 0.7rem; padding: 5px 8px; gap: 5px; }
+      .plan-peek-edit { display: none; }
     }
     .plan-peek-title {
       font-weight: 700;
@@ -1085,8 +1103,8 @@
       gap: 4px !important;
     }
     .day {
-      min-height: 116px;
-      height: auto !important;
+      height: 124px !important;
+      min-height: 124px !important;
       min-width: 0;
       padding: 6px !important;
       position: relative;
@@ -1095,16 +1113,12 @@
       overflow: hidden !important;
     }
     .day .slots { margin-top: auto; }
-    .day .confirm-row { margin-top: 4px; }
     .day.other-month {
-      background: transparent;
-      border-color: transparent;
-      opacity: 0.35;
-      cursor: pointer;
-      display: block !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      cursor: default !important;
     }
-    .day.other-month .day-num { color: var(--sb-ink-soft); font-weight: 600; }
-    .day.other-month:hover { opacity: 0.6; background: var(--sb-bg-card); border-color: rgba(42,16,24,0.2); }
 
     .day-num {
       font-family: 'Fraunces', Georgia, serif !important;
@@ -1289,8 +1303,8 @@
         gap: 8px !important;
       }
       .you-are { font-size: 0.78rem; }
-      .day { min-height: 108px; padding: 4px !important; }
-      .day.other-month { min-height: 30px; }
+      .day { height: 110px !important; min-height: 110px !important; padding: 4px !important; }
+      .day.other-month { height: 110px !important; }
       .day-num { font-size: 0.95rem !important; }
       .plan-chip { font-size: 0.58rem !important; padding: 1px 4px !important; }
       .cal-grid { gap: 3px !important; }
@@ -1792,6 +1806,7 @@ function renderBestDates() {
 }
 
 function renderWishlist() {
+  updateToolbarActive();
   const card = document.getElementById('wishlist-card');
   if (!card) return;
 
@@ -1853,8 +1868,19 @@ function getWishlist() {
 
 function toggleWishlistOpen(event) {
   if (event) event.stopPropagation();
-  wishlistOpen = !wishlistOpen;
+  const turningOn = !wishlistOpen;
+  wishlistOpen = turningOn;
+  if (turningOn) {
+    holidayMode = false;
+    holidayEditingDate = null;
+    plansOpen = false;
+    editingPlanId = null;
+  }
   clearPlanPeek();
+  renderCalendar();
+  renderHolidayModeBanner();
+  renderHolidayPanel();
+  renderPlansPanel();
   renderWishlist();
   updateToolbarActive();
 }
@@ -2001,6 +2027,7 @@ function possibleSharedSlots(dateKey) {
 }
 
 function renderHolidayModeBanner() {
+  updateToolbarActive();
   const el = document.getElementById('holiday-mode-banner');
   if (!el) return;
   if (!holidayMode) {
@@ -2096,7 +2123,15 @@ function renderCalendar() {
 
     const cell = document.createElement('div');
     cell.className = 'day';
-    if (!inMonth) cell.classList.add('other-month');
+
+    // Out-of-month cells: empty placeholder, no date number, no interaction.
+    // Keeps the 6×7 grid aligned without showing irrelevant numbers.
+    if (!inMonth) {
+      cell.classList.add('other-month');
+      grid.appendChild(cell);
+      continue;
+    }
+
     if (isPast) cell.classList.add('past');
     if (isToday) cell.classList.add('today-cell');
 
@@ -2112,17 +2147,6 @@ function renderCalendar() {
     numEl.textContent = d;
     top.appendChild(numEl);
     cell.appendChild(top);
-
-    // Out-of-month cells: render just the date number, dimmed. Click → jump to that month.
-    if (!inMonth) {
-      cell.style.cursor = 'pointer';
-      cell.addEventListener('click', () => {
-        viewDate = new Date(cellDate.getFullYear(), cellDate.getMonth(), 1);
-        renderCalendar(); renderBestDates(); renderWishlist(); updateNavBtns();
-      });
-      grid.appendChild(cell);
-      continue;
-    }
 
     // Shared/possible state is shown via border and slot styling only.
 
@@ -2475,10 +2499,21 @@ function updateToolbarActive() {
 // ── Plans UI ───────────────────────────────────────────────
 function togglePlansPanel(event) {
   if (event) event.stopPropagation();
-  plansOpen = !plansOpen;
-  if (!plansOpen) editingPlanId = null;
+  const turningOn = !plansOpen;
+  plansOpen = turningOn;
+  if (turningOn) {
+    holidayMode = false;
+    holidayEditingDate = null;
+    wishlistOpen = false;
+  } else {
+    editingPlanId = null;
+  }
   clearPlanPeek();
+  renderCalendar();
+  renderHolidayModeBanner();
+  renderHolidayPanel();
   renderPlansPanel();
+  renderWishlist();
   updateToolbarActive();
 }
 
@@ -2589,6 +2624,7 @@ function formatPlanDateRange(plan) {
 }
 
 function renderPlansPanel(afterRender) {
+  updateToolbarActive();
   const panel = document.getElementById('plans-panel');
   if (!panel) return;
   if (!plansOpen) {
@@ -2692,12 +2728,21 @@ function editDayTags(key) {
 
 function manageHolidays(event) {
   if (event) event.stopPropagation();
-  holidayMode = !holidayMode;
-  if (!holidayMode) holidayEditingDate = null;
+  const turningOn = !holidayMode;
+  holidayMode = turningOn;
+  if (turningOn) {
+    plansOpen = false;
+    editingPlanId = null;
+    wishlistOpen = false;
+  } else {
+    holidayEditingDate = null;
+  }
   clearPlanPeek();
   renderCalendar();
   renderHolidayModeBanner();
   renderHolidayPanel();
+  renderPlansPanel();
+  renderWishlist();
   updateToolbarActive();
 }
 
