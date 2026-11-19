@@ -1615,8 +1615,10 @@ async function init() {
   await applySession(session);
 
   // React to sign-in / sign-out events (e.g. magic link redirect).
-  supabase.auth.onAuthStateChange(async (_event, session) => {
-    await applySession(session);
+  // Not async, and deferred: awaiting Supabase calls inside this callback
+  // can deadlock supabase-js so that later saves hang on "Saving…".
+  supabase.auth.onAuthStateChange((_event, session) => {
+    setTimeout(() => { applySession(session); }, 0);
   });
 }
 
