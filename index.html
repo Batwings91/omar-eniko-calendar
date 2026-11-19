@@ -2402,49 +2402,56 @@ async function loadData() {
 }
 
 // ── Targeted Supabase writes ───────────────────────────────
+// supabase-js returns { error } instead of throwing, so a rejected write
+// would otherwise look like a success. ok() turns it into a thrown error.
+function ok(res) {
+  if (res && res.error) { console.error('Supabase write failed:', res.error); throw res.error; }
+  return res;
+}
+
 async function writeAvailability(member, date, slot, state) {
   if (state === 'off') {
-    await supabase.from('availability').delete().match({ member_key: member, date, slot });
+    ok(await supabase.from('availability').delete().match({ member_key: member, date, slot }));
   } else {
-    await supabase.from('availability').upsert({ member_key: member, date, slot, state });
+    ok(await supabase.from('availability').upsert({ member_key: member, date, slot, state }));
   }
   await touchLastUpdated();
 }
 
 async function writeAgreedDate(date, confirmed) {
   if (!confirmed) {
-    await supabase.from('agreed_dates').delete().eq('date', date);
+    ok(await supabase.from('agreed_dates').delete().eq('date', date));
   } else {
-    await supabase.from('agreed_dates').upsert({
+    ok(await supabase.from('agreed_dates').upsert({
       date, confirmed_by: currentUser || 'unknown', confirmed_at: new Date().toISOString(),
-    });
+    }));
   }
   await touchLastUpdated();
 }
 
 async function writeDayTagsForDate(date, tags) {
   // Replace all tags for a date with the given list (may be empty).
-  await supabase.from('day_tags').delete().eq('date', date);
+  ok(await supabase.from('day_tags').delete().eq('date', date));
   if (tags.length) {
-    await supabase.from('day_tags').insert(tags.map(t => ({
+    ok(await supabase.from('day_tags').insert(tags.map(t => ({
       date, tag_key: t.key, label: t.label,
       set_by: currentUser || 'unknown', set_at: t.at || new Date().toISOString(),
-    })));
+    }))));
   }
   await touchLastUpdated();
 }
 
 async function writeWishlistFull(items) {
   // Wishlist mutations replace the whole list; we mirror that with delete+insert.
-  await supabase.from('wishlist_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  ok(await supabase.from('wishlist_items').delete().neq('id', '00000000-0000-0000-0000-000000000000'));
   if (items.length) {
-    await supabase.from('wishlist_items').insert(items.map((it, i) => ({
+    ok(await supabase.from('wishlist_items').insert(items.map((it, i) => ({
       text: it.text, done: !!it.done, position: i,
       added_by: ['omar','eniko'].includes(it.meta?.addedBy) ? it.meta.addedBy : 'unknown',
       added_at: it.meta?.addedAt || new Date().toISOString(),
       reordered_by: ['omar','eniko'].includes(it.meta?.reorderedBy) ? it.meta.reorderedBy : null,
       reordered_at: it.meta?.reorderedAt || null,
-    })));
+    }))));
   }
   await touchLastUpdated();
 }
