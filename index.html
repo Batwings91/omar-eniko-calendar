@@ -1477,7 +1477,7 @@
     }
 
     /* ── Wishlist v2: tabs, drag handle, stars, details ─── */
-    .wish-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+    .wish-tabs { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
     .wish-tab {
       font-family: inherit; font-size: 0.85rem; font-weight: 600;
       background: var(--sb-bg-card); color: var(--sb-ink);
@@ -1499,8 +1499,26 @@
     .wish-item.both { border-color: var(--sb-good) !important; box-shadow: inset 3px 0 0 var(--sb-good); }
     .wish-item.dragging {
       opacity: 1 !important; position: relative; z-index: 5;
-      box-shadow: 4px 4px 0 var(--sb-line) !important; transform: scale(1.02);
-      background: #fffdf6 !important;
+      background: #fff6d6 !important;
+      border: 2px solid var(--sb-eniko) !important;
+      box-shadow: 6px 8px 0 rgba(26,10,20,0.35) !important;
+      transition: none !important;
+    }
+    .wish-item.dragging .wish-handle { color: var(--sb-eniko); cursor: grabbing; }
+    .wish-active.drag-active .wish-item:not(.dragging) {
+      opacity: 0.55; transition: opacity 120ms ease;
+    }
+    .wish-active.drag-active { -webkit-user-select: none; user-select: none; }
+    .wish-section-head {
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--sb-ink-soft); margin: 14px 0 6px;
+    }
+    .wish-section-head:first-of-type { margin-top: 2px; }
+    .wish-active + .wish-section-head, .plans-empty + .wish-section-head { margin-top: 16px; }
+    .wish-by { font-size: 0.7rem; color: #8a8079; font-weight: 400; }
+    .wish-add-list {
+      flex: 0 0 auto; font-family: inherit; font-size: 0.85rem; color: var(--sb-ink);
+      background: #fffdf6; border: 1.5px solid var(--sb-line); border-radius: 4px; padding: 6px 4px;
     }
     .wish-handle {
       flex-shrink: 0; width: 32px; height: 36px; margin: -4px 0 -4px -4px;
@@ -1563,7 +1581,7 @@
     .wish-star:focus-visible, .wish-cost:focus-visible {
       outline: 2px solid var(--sb-eniko); outline-offset: 2px;
     }
-    @media (prefers-reduced-motion: reduce) { .wish-item.dragging { transform: none; } }
+    @media (prefers-reduced-motion: reduce) { .wish-active.drag-active .wish-item { transition: none; } }
 
     /* Header: don't float the (transparent) title over the calendar when scrolling */
     header { position: static !important; }
@@ -1973,9 +1991,11 @@ function renderBestDates() {
 // Each change writes only the row it touches (no delete-and-reinsert), so
 // two people editing at once can't wipe each other's items.
 const WISH_LISTS = { dates: 'Date ideas', holidays: 'Holidays' };
+const WISH_TABS = { all: 'All', dates: 'Date ideas', holidays: 'Holidays' };
 const WISH_SEASONS = ['spring', 'summer', 'autumn', 'winter'];
 const WISH_TRIP_TYPES = { 'city-break': 'City break', 'longer-break': 'Longer break' };
-let wishTab = 'dates';
+let wishTab = 'all';
+let wishAddList = 'dates';   // which list the All tab's add box adds to
 let wishEditingId = null;     // id of the row whose details are open
 let wishEditCost = null;      // cost picked in the open editor (1–3 or null)
 let wishDoneOpen = false;
@@ -2058,6 +2078,7 @@ function wishEditorHtml(item) {
         <button class="holiday-chip wish-primary" onclick="wishSaveEdit('${item.id}')">Save</button>
         <button class="holiday-chip" onclick="wishCloseEdit()">Cancel</button>
         <button class="holiday-chip" onclick="wishPlanThis('${item.id}')">Plan this</button>
+        <button class="holiday-chip" onclick="wishMoveList('${item.id}')">Move to ${isHol ? 'Date ideas' : 'Holidays'}</button>
         <button class="holiday-chip plan-delete" onclick="wishDelete('${item.id}', event)">Delete</button>
       </div>
       <div class="wish-history">${history}</div>
@@ -2069,6 +2090,7 @@ function wishRowHtml(item, rank) {
   const both = wishStarred(item.id, 'omar') && wishStarred(item.id, 'eniko');
   const chips = wishMetaChips(item);
   const note = item.note ? `<span class="wish-note">${escapeHtml(item.note)}</span>` : '';
+  const by = `<span class="wish-by">Added by ${wishWho(item.addedBy)}</span>`;
   return `
     <li class="wishlist-item wish-item ${both ? 'both' : ''} ${editing ? 'editing' : ''}" data-id="${item.id}">
       <div class="wish-row">
@@ -2077,7 +2099,7 @@ function wishRowHtml(item, rank) {
         <input class="wishlist-check" type="checkbox" aria-label="Mark ${escapeHtml(item.text)} as done" onclick="wishToggleDone('${item.id}', event)">
         <button class="wish-main" aria-expanded="${editing}" onclick="wishToggleEdit('${item.id}', event)">
           <span class="wish-text">${escapeHtml(item.text)}</span>
-          ${chips ? `<span class="wish-chips">${chips}</span>` : ''}${note}
+          ${chips ? `<span class="wish-chips">${chips}</span>` : ''}${note}${by}
         </button>
         ${both ? '<span class="wish-both" title="You have both starred this">Both</span>' : ''}
         ${wishStarsHtml(item)}
@@ -2091,7 +2113,7 @@ function wishDoneRowHtml(item) {
     <li class="wishlist-item wish-item done" data-id="${item.id}">
       <div class="wish-row">
         <input class="wishlist-check" type="checkbox" checked aria-label="Mark ${escapeHtml(item.text)} as not done" onclick="wishToggleDone('${item.id}', event)">
-        <span class="wish-text wishlist-text done">${escapeHtml(item.text)}</span>
+        <span class="wish-text wishlist-text done">${escapeHtml(item.text)}${wishTab === 'all' ? ` <span class="wish-by">· ${item.list === 'holidays' ? 'Holiday' : 'Date idea'}</span>` : ''}</span>
         <button class="wishlist-delete" aria-label="Delete ${escapeHtml(item.text)}" onclick="wishDelete('${item.id}', event)">✕</button>
       </div>
     </li>`;
@@ -2120,18 +2142,36 @@ function renderWishlist(force) {
   wishRenderPending = false;
   card.style.display = 'block';
 
-  const all = wishItems(wishTab);
-  const active = all.filter(i => !i.done);
-  const done = all.filter(i => i.done);
-  if (wishEditingId && !active.some(i => i.id === wishEditingId)) wishEditingId = null;
+  const lists = wishTab === 'all' ? Object.keys(WISH_LISTS) : [wishTab];
+  const activeBy = {};
+  lists.forEach(l => { activeBy[l] = wishItems(l).filter(i => !i.done); });
+  const done = lists.flatMap(l => wishItems(l).filter(i => i.done));
+  const anyActive = lists.some(l => activeBy[l].length);
+  if (wishEditingId && !lists.some(l => activeBy[l].some(i => i.id === wishEditingId))) wishEditingId = null;
 
-  const tabs = Object.keys(WISH_LISTS).map(k => `
+  const countFor = k => k === 'all'
+    ? (data.wishlist || []).filter(i => !i.done).length
+    : wishItems(k).filter(i => !i.done).length;
+  const tabs = Object.keys(WISH_TABS).map(k => `
     <button class="wish-tab ${wishTab === k ? 'on' : ''}" role="tab" aria-selected="${wishTab === k}" onclick="wishSetTab('${k}')">
-      ${WISH_LISTS[k]} <span class="wish-count">${wishItems(k).filter(i => !i.done).length}</span>
+      ${WISH_TABS[k]} <span class="wish-count">${countFor(k)}</span>
     </button>`).join('');
 
-  const isHol = wishTab === 'holidays';
-  const empty = `<p class="plans-empty">${isHol ? 'No places yet. Add somewhere you both want to go.' : 'No ideas yet. Add your first one above.'}</p>`;
+  const addList = wishTab === 'all' ? wishAddList : wishTab;
+  const isHol = addList === 'holidays';
+  const emptyText = l => l === 'holidays' ? 'No places yet. Add somewhere you both want to go.' : 'No ideas yet. Add your first one above.';
+  const section = l => {
+    const rows = activeBy[l];
+    const head = wishTab === 'all' ? `<h4 class="wish-section-head">${WISH_LISTS[l]}</h4>` : '';
+    const body = rows.length
+      ? `<ul class="wishlist-list wish-active" data-list="${l}">${rows.map((it, i) => wishRowHtml(it, i + 1)).join('')}</ul>`
+      : `<p class="plans-empty">${emptyText(l)}</p>`;
+    return head + body;
+  };
+  const addPicker = wishTab === 'all' ? `
+      <select id="wish-add-list" class="wish-add-list" aria-label="Add to which list" onchange="wishAddList = this.value; renderWishlist(true)">
+        ${Object.keys(WISH_LISTS).map(k => `<option value="${k}" ${wishAddList === k ? 'selected' : ''}>${k === 'dates' ? 'Date idea' : 'Holiday'}</option>`).join('')}
+      </select>` : '';
 
   card.innerHTML = `
     <div class="panel-head">
@@ -2139,13 +2179,13 @@ function renderWishlist(force) {
       <button class="panel-close" onclick="toggleWishlistOpen(event)" aria-label="Close wishlist">✕</button>
     </div>
     <div class="wish-tabs" role="tablist">${tabs}</div>
-    <form class="wish-add" onsubmit="event.preventDefault(); wishAdd();">
+    <form class="wish-add" onsubmit="event.preventDefault(); wishAdd();">${addPicker}
       <input type="text" id="wish-add-input" maxlength="120" autocomplete="off"
         aria-label="${isHol ? 'Add a place' : 'Add an idea'}" placeholder="${isHol ? 'Add a place, e.g. Lisbon' : 'Add an idea'}">
       <button type="submit" class="holiday-chip wish-primary">Add</button>
     </form>
-    ${active.length ? `<ul class="wishlist-list" id="wish-active">${active.map((it, i) => wishRowHtml(it, i + 1)).join('')}</ul>` : empty}
-    ${active.length ? `<div class="wishlist-help">Drag ⠿ to put them in order, tap an item for details, ☆ to star your favourites.</div>` : ''}
+    ${lists.map(section).join('')}
+    ${anyActive ? `<div class="wishlist-help">Drag ⠿ to put them in order, tap an item for details, ☆ to star your favourites.</div>` : ''}
     <div class="wishlist-undo" id="wishlist-undo"></div>
     ${done.length ? `
       <details class="wish-done" ${wishDoneOpen ? 'open' : ''} ontoggle="wishDoneOpen = this.open">
@@ -2190,7 +2230,7 @@ function toggleWishlistOpen(event) {
 }
 
 function wishSetTab(tab) {
-  if (!WISH_LISTS[tab]) return;
+  if (!WISH_TABS[tab]) return;
   wishTab = tab;
   wishEditingId = null;
   renderWishlist(true);
@@ -2200,7 +2240,7 @@ function wishAdd() {
   const input = document.getElementById('wish-add-input');
   const text = input ? input.value.trim() : '';
   if (!text || !currentUser) return;
-  const list = wishTab;
+  const list = wishTab === 'all' ? wishAddList : wishTab;
   const maxPos = (data.wishlist || []).filter(i => i.list === list).reduce((m, i) => Math.max(m, i.position), -1);
   const item = {
     id: wishNewId(), list, text, done: false, position: maxPos + 1,
@@ -2311,6 +2351,20 @@ function undoWishlistDelete(event) {
   renderCalendar();
 }
 
+// Move an item to the other list; it goes to the bottom of that list.
+function wishMoveList(id) {
+  const item = wishById(id);
+  if (!item) return;
+  const to = item.list === 'holidays' ? 'dates' : 'holidays';
+  const maxPos = (data.wishlist || []).filter(i => i.list === to).reduce((m, i) => Math.max(m, i.position), -1);
+  item.list = to;
+  item.position = maxPos + 1;
+  wishEditingId = null;
+  wishSave(writeWishUpdate(id, { list: to, position: item.position }));
+  renderWishlist(true);
+  renderCalendar();
+}
+
 // "Plan this": open the new-plan form with the item's details filled in.
 function wishPlanThis(id) {
   const item = wishById(id);
@@ -2358,9 +2412,7 @@ function wishApplyOrder(list, orderedIds, movedId) {
 }
 
 function attachWishlistDnD() {
-  const list = document.getElementById('wish-active');
-  if (!list) return;
-  list.querySelectorAll('.wish-handle').forEach(h => {
+  document.querySelectorAll('.wish-active .wish-handle').forEach(h => {
     h.addEventListener('pointerdown', wishDragStart);
     h.addEventListener('keydown', wishHandleKey);
   });
@@ -2376,9 +2428,20 @@ function wishDragStart(e) {
   e.preventDefault();
   wishDragging = true;
   li.classList.add('dragging');
+  list.classList.add('drag-active');
+  if (navigator.vibrate) { try { navigator.vibrate(10); } catch {} }
   const startOrder = wishOrderIds(list);
   let y = e.clientY;
   let raf = null;
+  let shift = 0;                                    // current translateY of the row
+  const grab = e.clientY - li.getBoundingClientRect().top;
+  // Keep the lifted row under the finger: its slot changes as neighbours
+  // hop over it, so the offset is recomputed from where the slot now is.
+  const follow = () => {
+    const slotTop = li.getBoundingClientRect().top - shift;
+    shift = y - grab - slotTop;
+    li.style.transform = `translateY(${shift}px)`;
+  };
 
   // The dragged row itself is never moved in the DOM (that would drop the
   // touch); its neighbours hop over it as the finger passes their midpoint.
@@ -2401,10 +2464,10 @@ function wishDragStart(e) {
     let dy = 0;
     if (y < edge) dy = -Math.ceil((edge - y) / 6);
     else if (y > window.innerHeight - edge) dy = Math.ceil((y - (window.innerHeight - edge)) / 6);
-    if (dy) { window.scrollBy(0, dy); settle(); }
+    if (dy) { window.scrollBy(0, dy); settle(); follow(); }
     raf = requestAnimationFrame(tick);
   };
-  const onMove = ev => { y = ev.clientY; settle(); };
+  const onMove = ev => { y = ev.clientY; settle(); follow(); };
   const onEnd = ev => {
     window.removeEventListener('pointermove', onMove);
     window.removeEventListener('pointerup', onEnd);
@@ -2412,9 +2475,11 @@ function wishDragStart(e) {
     if (raf) cancelAnimationFrame(raf);
     wishDragging = false;
     li.classList.remove('dragging');
+    list.classList.remove('drag-active');
+    li.style.transform = '';
     const order = wishOrderIds(list);
     if (ev.type !== 'pointercancel' && order.join() !== startOrder.join()) {
-      wishApplyOrder(wishTab, order, li.dataset.id);
+      wishApplyOrder(list.dataset.list, order, li.dataset.id);
     } else {
       renderWishlist(true);
     }
@@ -2429,12 +2494,14 @@ function wishHandleKey(e) {
   if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
   e.preventDefault();
   const id = e.currentTarget.dataset.id;
-  const order = wishItems(wishTab).filter(i => !i.done).map(i => i.id);
+  const item = wishById(id);
+  if (!item) return;
+  const order = wishItems(item.list).filter(i => !i.done).map(i => i.id);
   const from = order.indexOf(id);
   const to = from + (e.key === 'ArrowUp' ? -1 : 1);
   if (from < 0 || to < 0 || to >= order.length) return;
   order.splice(to, 0, order.splice(from, 1)[0]);
-  wishApplyOrder(wishTab, order, id);
+  wishApplyOrder(item.list, order, id);
   const h = document.querySelector(`.wish-handle[data-id="${id}"]`);
   if (h) h.focus();
 }
@@ -3017,20 +3084,14 @@ function closePlansPanel() {
 function startNewPlan(prefillDate) {
   const today = isoDate(new Date());
   const startDate = prefillDate || today;
-  // Default end-date to the day after start, so multi-day plans (weekends
-  // away etc.) need zero extra clicks. Single-day plans just dial it back.
-  const nextDay = (iso) => {
-    const d = new Date(iso + 'T12:00:00');
-    d.setDate(d.getDate() + 1);
-    return isoDate(d);
-  };
+  // Most plans are a single day, so the end date starts equal to the start.
   editingPlanId = 'new';
   plansOpen = true;
   renderPlansPanel(() => {
     const s = document.getElementById('plan-start-date');
     if (s) s.value = startDate;
     const e = document.getElementById('plan-end-date');
-    if (e) e.value = nextDay(startDate);
+    if (e) e.value = startDate;
     const t = document.getElementById('plan-title');
     if (t) t.focus();
   });
@@ -3043,11 +3104,7 @@ function onPlanStartChange() {
   const start = startEl.value;
   const end   = endEl.value;
   if (!start) return;
-  if (!end || end < start) {
-    const d = new Date(start + 'T12:00:00');
-    d.setDate(d.getDate() + 1);
-    endEl.value = isoDate(d);
-  }
+  if (!end || end < start) endEl.value = start;
 }
 
 function startEditPlan(id) {
